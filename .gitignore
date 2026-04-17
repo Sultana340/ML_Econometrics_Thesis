@@ -7,3 +7,15 @@ runs/
 datasets/
 *.egg-info/
 .vscode/
+.ipynb_checkpoints/
+logs/
+*.log
+results/*
+!results/summary_*.csv
+datasets/
+data/
+.DS_Store/
+Thumbs.db
+runs/
+*.tmp
+*.bak
