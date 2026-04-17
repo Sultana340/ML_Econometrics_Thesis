@@ -3,7 +3,7 @@
 
 import torch
 from sklearn.model_selection import train_test_split
-from .mnist_dgps import AbstractMNISTxz
+from .agmm_mnist_dgps import AbstractMNISTxz
 
 
 def generate_data(

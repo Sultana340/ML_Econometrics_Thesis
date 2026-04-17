@@ -11,7 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 import copy
 from .oadam import OAdam
 from .rbflayer import RBF
-from .utilities import dprint
+from .agmm_utilities import dprint
 
 # TODO. This epsilon is used only because pytorch 1.5 has an instability in torch.cdist
 # when the input distance is close to zero, due to instability of the square root in

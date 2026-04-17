@@ -6,8 +6,27 @@ import random
 import numpy as np
 import torch
 from torchvision import datasets, transforms
-from .utilities import standardize
-from ..dgps import get_tau_fn, fn_dict
+from .agmm_utilities import standardize
+
+# Define tau functions and dictionary
+def identity_fn(x):
+    return x
+
+def abs_fn(x):
+    return np.abs(x)
+
+def linear_fn(x):
+    return 2 * x
+
+fn_dict = {
+    'identity': identity_fn,
+    'abs': abs_fn,
+    'linear': linear_fn,
+}
+
+def get_tau_fn(fn):
+    """Return the function as is"""
+    return fn
 
 # DGP from Bennet et al. paper
 

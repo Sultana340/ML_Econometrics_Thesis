@@ -3,10 +3,10 @@
 
 import torch
 import numpy as np
-from .generate_data import generate_data
-from .trainers import train_agmm, train_kernellayergmm, train_centroidmmdgmm, train_kernellossagmm
-from .utilities import eval_performance
-from .rbflayer import gaussian, inverse_multiquadric
+from agmm.iv_dgp_generate_data import generate_data
+from agmm.agmm_trainer import train_agmm, train_kernellayergmm, train_centroidmmdgmm, train_kernellossagmm
+from agmm.agmm_utilities import eval_performance
+from agmm.rbflayer import gaussian, inverse_multiquadric
 
 
 def dgp_to_bools(dgp_str):

@@ -3,8 +3,8 @@
 
 from sklearn.cluster import KMeans
 from .agmm_earlystop import AGMMEarlyStop, KernelLossAGMMEarlyStop, CentroidMMDGMMEarlyStop, KernelLayerMMDGMMEarlyStop
-from .architectures import CNN_Z_agmm, CNN_Z_kernel, CNN_X, CNN_X_bn, fc_z_kernel, fc_z_agmm, fc_x
-from .utilities import log_metrics, dprint
+from .agmm_architectures import CNN_Z_agmm, CNN_Z_kernel, CNN_X, CNN_X_bn, fc_z_kernel, fc_z_agmm, fc_x
+from .agmm_utilities import log_metrics, dprint
 from .rbflayer import gaussian, inverse_multiquadric
 
 # train AGMM

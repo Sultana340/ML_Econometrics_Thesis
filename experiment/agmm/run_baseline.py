@@ -5,9 +5,14 @@ import pandas as pd
 
 # Add the src directory to the path to import custom modules
 import sys
-sys.path.insert(0, '../../src')
+# Get the project root directory (two levels up from this script)
+script_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(os.path.dirname(script_dir))
+src_path = os.path.join(project_root, 'src')
+sys.path.insert(0, src_path)
+sys.path.insert(0, script_dir)
 
-from run_agmm_experiment import experiments # 
+from run_agmm_experiment import experiment 
 
 
 def main():
