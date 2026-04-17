@@ -1,3 +1,10 @@
+"""
+ Thesis AGMM Experiment Script
+ Derived from modified baseline implementation by Dikkala, Nishanth, Greg Lewis, Lester Mackey, and Vasilis Syrgkanis. "Minimax estimation of conditional moment models." arXiv preprint arXiv:2006.07201 (2020). https://github.com/microsoft/AdversarialGMM.git.
+ All modification for thesis experiments by Abida Sultana should be noted in the git history.
+"""
+
+
 import itertools
 import os
 import numpy as np
@@ -24,7 +31,7 @@ def main():
  iv_strength = [0.5]
  estimators = ['AGMM']
  dgps = ['z_image']
- num_datas = [1000]
+ num_datas = [500]
 
  settings = list(itertools.product(
     tau_fn, iv_strength, dgps, num_datas, estimators))

@@ -49,7 +49,10 @@ def log_metrics(Z, T, Y, Z_val, T_val, Y_val, T_test, learner, adversary, epoch,
 
     writer.add_scalar('myR2train', myR2train, epoch)
     # select 3 points from the set of test points
-    test_points = T_test[[0, 50, 99]]
+    n_test = T_test.shape[0]
+    test_indices = [0, min(n_test // 2, n_test - 1), min(n_test - 1, n_test - 1)]
+    test_indices = [i for i in test_indices if i < n_test]  # ensure all indices are valid
+    test_points = T_test[test_indices]
     learned_function_values = dict(zip(list(test_points[:, 0].cpu().numpy().flatten().astype('str')),
                                        list(learner(test_points).cpu().detach().numpy().flatten())))
     writer.add_scalars('function', learned_function_values, epoch)
