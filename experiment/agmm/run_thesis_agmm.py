@@ -29,9 +29,9 @@ def main():
 
  tau_fn = ['abs']
  iv_strength = [0.5]
- estimators = ['AGMM']
+ estimators = ['AGMM', 'KernelLayerMMDGMM']
  dgps = ['z_image']
- num_datas = [500]
+ num_datas = [1000]
 
  settings = list(itertools.product(
     tau_fn, iv_strength, dgps, num_datas, estimators))
