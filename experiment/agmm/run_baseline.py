@@ -7,7 +7,7 @@ import pandas as pd
 import sys
 sys.path.insert(0, '../../src')
 
-from agmm.run_agmm_experiment import experiment
+from run_agmm_experiment import experiments # 
 
 
 def main():
@@ -18,16 +18,16 @@ def main():
  tau_fn = ['abs']
  iv_strength = [0.5]
  estimators = ['AGMM']
- dgps = ['z_image', 'x_image', 'xz_image']
+ dgps = ['z_image']
  num_datas = [1000]
 
  settings = list(itertools.product(
     tau_fn, iv_strength, dgps, num_datas, estimators))
  result_dict = {}
- monte_carlo = 5
+ monte_carlo = 1
 
  for( tau_fn, iv_strength, dgp, num_data, est) in settings:
-    print(------ Settings ------)
+    print("------ Settings ------")
     print(tau_fn)
     print("iv_strength", iv_strength)
     print("dgp", dgp)
@@ -40,8 +40,7 @@ def main():
         results.append(list(result))
 
     np_results = np.array(results)
-    result_dict[(tau_fn, iv_strength, dgp, num_data, est)] 
-                 = np_results.mean(axis=0)
+    result_dict[(tau_fn, iv_strength, dgp, num_data, est)] = np_results.mean(axis=0)
     print("---------- Results ----------")
     print("Average MSE", np_results.mean(axis=0)[5])
     print("Standard deviation MSE", np_results.std(axis=0)[5])
