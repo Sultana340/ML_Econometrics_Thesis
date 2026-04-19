@@ -19,3 +19,7 @@ Thumbs.db
 runs/
 *.tmp
 *.bak
+agmm_model/
+*.pt
+*.pth
+

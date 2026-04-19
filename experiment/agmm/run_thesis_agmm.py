@@ -7,6 +7,7 @@
 
 import itertools
 import os
+import warnings
 import numpy as np
 import pandas as pd
 
@@ -20,18 +21,18 @@ sys.path.insert(0, src_path)
 sys.path.insert(0, script_dir)
 
 from run_agmm_experiment import experiment 
-
+warnings.simplefilter("ignore", category=UserWarning) 
 
 def main():
  device = 'cpu'
- print("Running Thesis AGMM experiment on", device) # 
+ print("Running Thesis AGMM experiment on", device) 
  VERBOSE = False
 
  tau_fn = ['abs']
  iv_strength = [0.5]
- estimators = ['AGMM', 'KernelLayerMMDGMM']
- dgps = ['z_image']
- num_datas = [1000]
+ estimators = ['AGMM', 'KernelLayerMMDGMM'] 
+ dgps = ['z_image'] 
+ num_datas = [1000] 
 
  settings = list(itertools.product(
     tau_fn, iv_strength, dgps, num_datas, estimators))
