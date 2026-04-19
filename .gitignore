@@ -22,4 +22,5 @@ runs/
 agmm_model/
 *.pt
 *.pth
+Analysis/tables_output/
 
