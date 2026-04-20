@@ -32,7 +32,6 @@ def get_tau_fn(fn):
     """Return the function as is"""
     return fn
 
-# DGP from Bennet et al. paper
 
 
 class AbstractMNISTxz(object):
