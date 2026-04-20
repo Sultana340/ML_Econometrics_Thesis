@@ -5,20 +5,20 @@
 """
 
 
-import itertools
-import os
+import itertools # For creating the Cartesian product of settings
+import os # For file path manipulations
 import warnings
 import numpy as np
 import pandas as pd
 
 # Add the src directory to the path to import custom modules
-import sys
+import sys # 
 # Get the project root directory (two levels up from this script)
-script_dir = os.path.dirname(os.path.abspath(__file__))
-project_root = os.path.dirname(os.path.dirname(script_dir))
-src_path = os.path.join(project_root, 'src')
-sys.path.insert(0, src_path)
-sys.path.insert(0, script_dir)
+script_dir = os.path.dirname(os.path.abspath(__file__)) # Get the directory of the current script
+project_root = os.path.dirname(os.path.dirname(script_dir)) # Get the parent directory of the script directory, which is the project root
+src_path = os.path.join(project_root, 'src') # Construct the path to the src directory
+sys.path.insert(0, src_path) # Add the src directory to the system path for imports
+sys.path.insert(0, script_dir)# Add the current script directory to the system path for imports
 
 from run_agmm_experiment import experiment 
 warnings.simplefilter("ignore", category=UserWarning) 
@@ -28,7 +28,7 @@ def main():
  print("Running Thesis AGMM experiment on", device) 
  VERBOSE = False
 
- tau_fn = ['abs']
+ tau_fn = ['linear','sin','abs']
  iv_strength = [0.5]
  estimators = ['AGMM', 'KernelLayerMMDGMM'] 
  dgps = ['z_image'] 

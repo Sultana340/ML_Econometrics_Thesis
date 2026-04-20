@@ -18,10 +18,14 @@ def abs_fn(x):
 def linear_fn(x):
     return 2 * x
 
+def sin_fn(x):
+    return np.sin(x)
+
 fn_dict = {
     'identity': identity_fn,
     'abs': abs_fn,
     'linear': linear_fn,
+    'sin': sin_fn,
 }
 
 def get_tau_fn(fn):

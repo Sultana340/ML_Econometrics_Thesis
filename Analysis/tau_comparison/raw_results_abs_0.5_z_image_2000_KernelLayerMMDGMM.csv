@@ -1,0 +1,2 @@
+tau_fn,iv_strength,dgp,num_data,estimator,MSE
+abs,0.5,z_image,2000,KernelLayerMMDGMM,0.018889962

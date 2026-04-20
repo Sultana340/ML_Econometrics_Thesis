@@ -1,0 +1,2 @@
+tau_fn,iv_strength,dgp,num_data,estimator,avg_MSE,std_MSE
+linear,0.5,z_image,2000,AGMM,0.0058505516,0.0
