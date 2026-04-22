@@ -61,13 +61,6 @@ tau_fn = ['linear','sin','abs']
  monte carlo = 1
 Changes in code: I've added the sin_fn function and updated the fn_dict in agmm_mnist_dgps.py to include 'sin'. The script should now be able to use the 'sin' tau function without errors. The sin_fn is defined as np.sin(x), which applies the sine function to the input.The linear function is already defined linear_fn(x) = 2 * x in agmm_mnist_dgps.py. Installed packages torch,torchaudio,torchvision.
 Result:
-Linear case: easy inverse problem + smooth structure + near-ideal identification+ Best performance AGMM
-Absolute value case: mid difficulty (non-smooth) + slightly higher MSE + estimator handles moderate non linearity+ Good performance(still strong R2)
-Sin Case: high MSE + Neg R2 + High frequency variation + Instrument weakness + Finite sample issue
-
-Interpretation: works extremely well for smooth/ low-complexity structure+ Stable under piecewise smooth function(abs) + But struggle with high frequency functions.
-
-A Clean Narrative: AGMM perform strongly under smooth structural functions but deteriorates under highly nonlinear and oscillatory mappings, highlighting the interaction between function complexity, identification strength, and adversarial approximation.
 
 ## Experiment 6: Run Started: 2026-04-20, 11:20 (Validation Experiment)
 Objective: To compare the performance of different tau functions (linear, sin, abs) in the AGMM framework.
@@ -81,3 +74,23 @@ tau_fn = ['linear','sin','abs']
  monte carlo = 5
 Changes in code: I've added the sin_fn function and updated the fn_dict in agmm_mnist_dgps.py to include 'sin'. The script should now be able to use the 'sin' tau function without errors. The sin_fn is defined as np.sin(x), which applies the sine function to the input.The linear function is already defined linear_fn(x) = 2 * x in agmm_mnist_dgps.py. Installed packages torch,torchaudio,torchvision.
 Result:
+
+Linear case: easy inverse problem + smooth structure + near-ideal identification+ Best performance AGMM
+Absolute value case: mid difficulty (non-smooth) + slightly higher MSE + estimator handles moderate non linearity+ Good performance(still strong R2)
+Sin Case: high MSE + Neg R2 + High frequency variation + Instrument weakness + Finite sample issue
+
+Interpretation: works extremely well for smooth/ low-complexity structure+ Stable under piecewise smooth function(abs) + But struggle with high frequency functions.
+
+A Clean Narrative: AGMM perform strongly under smooth structural functions but deteriorates under highly nonlinear and oscillatory mappings, highlighting the interaction between function complexity, identification strength, and adversarial approximation.
+
+
+## Experiment 7: Run Started: 2026-04-21, 11:20 (IV Strength Comparision)
+Objective: To compare the performance of different IV strengths (low, medium, high) in the AGMM framework.
+Run Started: 2026-04-20, 10:20
+Script:run_thesis_tau_comparision.py
+tau_fn = ['linear','sin','abs']
+ iv_strength = [0.5]
+ estimators = ['AGMM'] 
+ dgps = ['z_image'] 
+ num_datas = [2000]
+ monte carlo = 5

@@ -88,7 +88,7 @@ class AbstractMNISTxz(object):
         return images
 
     def _true_tau_function_np(self, x):
-        func = self._function_name
+        func = self._function_name 
         return get_tau_fn(fn_dict[func])(x)
 
     def generate_data(self, num_data, tau_fn='linear', two_gps=False, n_instruments=1, iv_strength=0.5, **kwargs):
