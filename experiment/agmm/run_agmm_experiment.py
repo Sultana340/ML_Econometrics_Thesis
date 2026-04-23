@@ -56,14 +56,14 @@ def kernel_hyperparam_select(est, dgp):
 
 def train_hyperparam_select(est, dgp):
     learner_lr = 1e-4
-    adversary_lr = 1e-4
+    adversary_lr = 5e-5
     learner_l2 = 1e-4
     adversary_l2 = 1e-4
     adversary_norm_reg = 1e-4
-    n_epochs = 100
+    n_epochs = 200
     bs = 100
     train_learner_every = 1
-    train_adversary_every = 1
+    train_adversary_every = 2
     if est == 'AGMM':
         if dgp == 'z_image':
             learner_lr = 2e-4

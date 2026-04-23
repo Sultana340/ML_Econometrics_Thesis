@@ -111,7 +111,7 @@ class _BaseAGMM:
 
         return Z, T, Y
 
-    def predict(self, T, model='avg', burn_in=0, alpha=None):
+    def predict(self, T, model='avg', burn_in=50, alpha=None):
         """
         Parameters
         ----------
@@ -146,7 +146,7 @@ class _BaseSupLossAGMM(_BaseAGMM):
 
     def fit(self, Z, T, Y, Z_dev, T_dev, Y_dev, eval_freq=1,
             learner_l2=1e-3, adversary_l2=1e-4, adversary_norm_reg=1e-3,
-            learner_lr=0.001, adversary_lr=0.001, n_epochs=100, bs=100, train_learner_every=1, train_adversary_every=1,
+            learner_lr=0.001, adversary_lr=0.001, n_epochs=200, bs=100, train_learner_every=1, train_adversary_every=2,
             ols_weight=0., warm_start=False, logger=None, model_dir='model', device=None):
         """
         Parameters

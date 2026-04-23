@@ -59,7 +59,7 @@ def log_metrics(Z, T, Y, Z_val, T_val, Y_val, T_test, learner, adversary, epoch,
 
 
 def plot_results(est, T_test, true_of_T_test, fname=None, ind=0):
-    point, lb, ub = est.predict(T_test, burn_in=0, alpha=0.2)
+    point, lb, ub = est.predict(T_test, burn_in=50, alpha=0.2)
     point_final = est.predict(T_test, model='final')
     point_earlystop = est.predict(T_test, model='earlystop')
     truth = true_of_T_test.cpu().numpy()
@@ -104,7 +104,7 @@ def plot_results(est, T_test, true_of_T_test, fname=None, ind=0):
 
 
 def eval_performance(est, T_test, true_of_T_test):
-    point, lb, ub = est.predict(T_test, burn_in=0, alpha=0.2)
+    point, lb, ub = est.predict(T_test, burn_in=50, alpha=0.2)
     point_final = est.predict(T_test, model='final')
     point_earlystop = est.predict(T_test, model='earlystop')
     truth = true_of_T_test.cpu().numpy()
