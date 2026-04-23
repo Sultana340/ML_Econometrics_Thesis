@@ -33,7 +33,7 @@ def main():
  tau_fn = ['linear','sin','abs']
  iv_strength = [0.5]
  estimators = ['AGMM'] 
- dgps = ['z_image'] 
+ dgps = ['x_image']
  num_datas = [2000]
 
  settings = list(itertools.product(
@@ -88,4 +88,3 @@ def main():
     summary_df.to_csv(f"../../Analysis/tau_comparison/summary_results_{tau_fn}_{iv_strength}_{dgp}_{num_data}_{est}.csv", index=False)
 if __name__ == "__main__":
     main()
-    
