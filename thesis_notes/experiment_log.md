@@ -1,4 +1,5 @@
 
+## Baseline Experiment
 
 ## Experiment 1: Modified Baseline AGMM
 -tau_fn: abs
@@ -96,6 +97,11 @@ tau_fn = ['abs']
  monte carlo = 5
  Epoch = 200
 
+## Final Experiment
+
+
+
+
  ## Experiment 8:  How effectively does AGMM recover the structural function under varying levels of identification and structural complexity?
  Objective: To compare the performance of different IV strengths (low, medium, high) in the AGMM framework and structural complexity.
 Run Started: 2026-04-23, 10:20
@@ -108,10 +114,11 @@ tau_fn = ['sin','abs']
  monte carlo = 5
  Epoch = 200
 
- ## Experiment 9:  How effectively does AGMM recover the structural function under varying levels of identification and structural complexity?
- Objective: To compare the performance of different IV strengths (low, medium, high) in the AGMM framework and structural complexity.
-Run Started: 2026-04-23, 10:20
-Script:run_thesis_tau_comparision.py
+ 
+ ## Experiment 9:  How does the finite-sample performance of AGMM change when high dimensionality enters through the instrument space versus the treatment space?
+ Objective: 
+ Run Started: 2026-04-24, 13:00
+Script:run_thesis_comparision.py
 tau_fn = ['abs']
  iv_strength = [0.5]
  estimators = ['AGMM'] 
@@ -119,3 +126,5 @@ tau_fn = ['abs']
  num_datas = [2000]
  monte carlo = 5
  Epoch = 200
+
+ 
