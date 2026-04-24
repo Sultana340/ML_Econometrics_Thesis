@@ -11,25 +11,25 @@ from .rbflayer import gaussian, inverse_multiquadric
 
 
 def train_agmm(
-    Z_train,
-    T_train,
-    Y_train,
-    G_train,
-    Z_dev,
-    T_dev,
-    Y_dev,
-    G_dev,
-    Z_val,
-    T_val,
-    Y_val,
-    G_val,
-    T_test,
-    G_test,
-    X_IMAGE=False,
-    Z_IMAGE=False,
-    n_t=1,
-    n_instruments=2,
-    n_hidden=200,
+    Z_train, # shape (n_samples, z_dim)
+    T_train, # shape (n_samples, t_dim)
+    Y_train, # shape (n_samples, y_dim)
+    G_train, # shape (n_samples, t_dim) true structural function of T, used for logging
+    Z_dev, # shape (n_samples, z_dim)
+    T_dev, # shape (n_samples, t_dim)
+    Y_dev, # shape (n_samples, y_dim)
+    G_dev, # shape (n_samples, t_dim) true structural function of T, used for logging
+    Z_val, # shape (n_samples, z_dim)
+    T_val, # shape (n_samples, t_dim)
+    Y_val, # shape (n_samples, y_dim)
+    G_val, # shape (n_samples, t_dim) true structural function of T, used for logging
+    T_test, # shape (n_samples, t_dim)
+    G_test, # shape (n_samples, t_dim) true structural function of T, used for logging
+    X_IMAGE=False, # whether to use CNN architecture for learner, which is only supported for image data. If False, uses fully connected architecture.
+    Z_IMAGE=False, # whether to use CNN architecture for adversary, which is only supported for image data. If False, uses fully connected architecture.
+    n_t=1, # dimension of treatment variable T
+    n_instruments=2, # dimension of instruments
+    n_hidden=200, # number of hidden units in fully connected layers of both learner and adversary. If using CNN architecture, this is the number of hidden units in the final fully connected layer before the output layer.
     dropout_p=0.1,
     learner_lr=1e-4,
     adversary_lr=5e-5,

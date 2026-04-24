@@ -85,12 +85,37 @@ A Clean Narrative: AGMM perform strongly under smooth structural functions but d
 
 
 ## Experiment 7: Run Started: 2026-04-21, 11:20 (IV Strength Comparision)
-Objective: To compare the performance of different IV strengths (low, medium, high) in the AGMM framework.
+Objective: To compare the performance of different IV strengths (low, medium, high).
 Run Started: 2026-04-20, 10:20
-Script:run_thesis_tau_comparision.py
-tau_fn = ['linear','sin','abs']
- iv_strength = [0.5]
+Script:run_thesis_iv_strength_comparison_final.py
+tau_fn = ['abs']
+ iv_strength = [0.3,0.6,0.9]
  estimators = ['AGMM'] 
  dgps = ['z_image'] 
  num_datas = [2000]
  monte carlo = 5
+ Epoch = 200
+
+ ## Experiment 8:  How effectively does AGMM recover the structural function under varying levels of identification and structural complexity?
+ Objective: To compare the performance of different IV strengths (low, medium, high) in the AGMM framework and structural complexity.
+Run Started: 2026-04-23, 10:20
+Script:run_thesis_iv_strength_tau_function_comparision.py
+tau_fn = ['sin','abs']
+ iv_strength = [0.3,0.6,0.9]
+ estimators = ['AGMM'] 
+ dgps = ['z_image'] 
+ num_datas = [2000]
+ monte carlo = 5
+ Epoch = 200
+
+ ## Experiment 9:  How effectively does AGMM recover the structural function under varying levels of identification and structural complexity?
+ Objective: To compare the performance of different IV strengths (low, medium, high) in the AGMM framework and structural complexity.
+Run Started: 2026-04-23, 10:20
+Script:run_thesis_tau_comparision.py
+tau_fn = ['abs']
+ iv_strength = [0.5]
+ estimators = ['AGMM'] 
+ dgps = ['z_image','x_image'] 
+ num_datas = [2000]
+ monte carlo = 5
+ Epoch = 200
