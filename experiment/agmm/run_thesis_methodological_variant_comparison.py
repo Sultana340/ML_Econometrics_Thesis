@@ -39,7 +39,7 @@ def main():
     num_data_list = [2000]
 
     # Added g_features
-    g_features_list = [100]
+    g_features_list = [10]
 
     monte_carlo = 1
 
