@@ -38,20 +38,24 @@ def main():
     iv_strength_list = [0.6]
     dgps = ['z_image']
     num_data_list = [2000]
+
+    # Added g_features
+    g_features_list = [100]
+
     monte_carlo = 3
 
-    
-    estimators = ['AGMM','KernelLayerMMDGMM']
+    estimators = ['AGMM','CentroidMMDGMM']
 
     # Later, after this works, you can test other variants one by one:
-    # estimators = ['AGMM', 'centroidMMDGMM']
-    # estimators = ['AGMM', 'kernelLossAGMM']
+    # estimators = ['AGMM', 'CentroidMMDGMM']
+    # estimators = ['AGMM', 'KernelLossAGMM']
 
     settings = list(itertools.product(
         tau_fn_list,
         iv_strength_list,
         dgps,
         num_data_list,
+        g_features_list,
         estimators
     ))
 
@@ -71,12 +75,13 @@ def main():
         "variant_comparison_summary_abs_pi06_zimage.csv"
     )
 
-    for tau_fn, iv_strength, dgp, num_data, est in settings:
+    for tau_fn, iv_strength, dgp, num_data, g_features, est in settings:
         print("\n------ Settings ------")
         print("tau_fn:", tau_fn)
         print("iv_strength:", iv_strength)
         print("dgp:", dgp)
         print("num_data:", num_data)
+        print("g_features:", g_features)
         print("estimator:", est)
 
         mse_results = []
@@ -93,7 +98,8 @@ def main():
                     num_data,
                     est,
                     device,
-                    VERBOSE
+                    VERBOSE,
+                    g_features=g_features
                 )
 
                 r2_avg = float(result[0])
@@ -110,6 +116,7 @@ def main():
                     'iv_strength': iv_strength,
                     'dgp': dgp,
                     'num_data': num_data,
+                    'g_features': g_features,
                     'estimator': est,
                     'run': run + 1,
                     'R2_avg': r2_avg,
@@ -131,6 +138,7 @@ def main():
                 print("iv_strength:", iv_strength)
                 print("dgp:", dgp)
                 print("num_data:", num_data)
+                print("g_features:", g_features)
                 print("estimator:", est)
                 print("run:", run + 1)
                 print("Error message:", e)
@@ -140,6 +148,7 @@ def main():
                     'iv_strength': iv_strength,
                     'dgp': dgp,
                     'num_data': num_data,
+                    'g_features': g_features,
                     'estimator': est,
                     'run': run + 1,
                     'R2_avg': np.nan,
@@ -187,6 +196,7 @@ def main():
             'iv_strength': iv_strength,
             'dgp': dgp,
             'num_data': num_data,
+            'g_features': g_features,
             'estimator': est,
             'MC_successful_runs': len(mse_results),
             'avg_MSEearlystop': avg_mse,
