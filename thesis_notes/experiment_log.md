@@ -12,7 +12,7 @@ Result:
 
 Observation:
 
-## Experiment 2: Baseline AGMM
+## Experiment 2: Modified Baseline AGMM
 -tau_fn: abs
 -iv_strenth: 0.5
 -num_data: 1000
@@ -97,6 +97,8 @@ tau_fn = ['abs']
  monte carlo = 5
  Epoch = 200
 
+
+###################################################
 ## Final Experiment
 
 
@@ -104,6 +106,7 @@ tau_fn = ['abs']
 
  ## Experiment 8:  How effectively does AGMM recover the structural function under varying levels of identification and structural complexity?
  Objective: To compare the performance of different IV strengths (low, medium, high) in the AGMM framework and structural complexity.
+ Run time: 12hours+
 Run Started: 2026-04-23, 10:20
 Script:run_thesis_iv_strength_tau_function_comparision.py
 tau_fn = ['sin','abs']
@@ -113,18 +116,76 @@ tau_fn = ['sin','abs']
  num_datas = [2000]
  monte carlo = 5
  Epoch = 200
+ Result:
+
+
+Observation:
 
  
  ## Experiment 9:  How does the finite-sample performance of AGMM change when high dimensionality enters through the instrument space versus the treatment space?
- Objective: 
+ Objective: To assess the finite-sample performance of AGMM change when high dimensionality enters through the instrument space versus the treatment space.
  Run Started: 2026-04-24, 13:00
 Script:run_thesis_comparision.py
-tau_fn = ['abs']
- iv_strength = [0.5]
+tau_fn = ['abs','sin']
+ iv_strength = [0.6]
  estimators = ['AGMM'] 
  dgps = ['z_image','x_image'] 
  num_datas = [2000]
  monte carlo = 5
  Epoch = 200
+Result:
+
+
+Observation:
+
+
+
+ ## Experiment 10: Do kernel-based methodological variants improve structural recovery or training stability relative to the baseline AGMM implementation in a controlled high dimensional IV setting?
+ Sub Experiment 1: Using all the variants w.r. to "abs"
+ Run Started:
+ Run Time:
+ Script:
+  tau_fn_list = ['abs']
+    iv_strength_list = [0.6]
+    dgps = ['z_image']
+    num_data_list = [2000]
+    monte_carlo = 3
+    estimators = [
+        'AGMM',
+        'kernelLayerMMDGMM', 'kernelLossAGMM','centroidMMDGMM']
+
+Sub Experiment 2: Using all the variants w.r. to "sin"
+ Run Started:
+ Run Time:
+ Script:
+  tau_fn_list = ['sin']
+    iv_strength_list = [0.6]
+    dgps = ['z_image']
+    num_data_list = [2000]
+    monte_carlo = 3
+    estimators = [
+        'AGMM',
+        'kernelLayerMMDGMM', 'kernelLossAGMM','centroidMMDGMM']
+
+
+Then combine the results.        
+
+Result:
+
+
+Observation:
+
+## Experiment 11: How stable is the adversarial training procedure under practical computational constraints?
+
+
+
+
+
+
+## Experiment 12: How does the proposed AGMM implementation relate to existing neural instrument-variable estimators, particularly DeepGMM and DeepIV, with respect to structural recovery, endogeneity control, and computational feasibility in nonparametric IV settings?
+
+
+
+
 
  

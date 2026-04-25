@@ -18,28 +18,41 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(os.path.dirname(script_dir))
 src_path = os.path.join(project_root, 'src')
 
-# add src and script dir to sys.path for imports
+# Add src and script dir to sys.path for imports
 sys.path.insert(0, src_path)
 sys.path.insert(0, script_dir)
 
 from run_agmm_experiment import experiment
+
 warnings.simplefilter("ignore", category=UserWarning)
 
 
 def main():
     device = 'cpu'
-    print("Running Thesis Experiment on different variants", device)
+    print("Running Thesis Variant Comparison Experiment on", device)
+
     VERBOSE = False
 
-    tau_fn_list = ['abs']   # add 'linear' if supported
+    # Main thesis setting for variant comparison
+    tau_fn_list = ['abs']
     iv_strength_list = [0.6]
-    estimators = ['AGMM', 'kernelLayerMMDGMM']
     dgps = ['z_image']
     num_data_list = [2000]
     monte_carlo = 3
 
+    
+    estimators = ['AGMM','KernelLayerMMDGMM']
+
+    # Later, after this works, you can test other variants one by one:
+    # estimators = ['AGMM', 'centroidMMDGMM']
+    # estimators = ['AGMM', 'kernelLossAGMM']
+
     settings = list(itertools.product(
-        tau_fn_list, iv_strength_list, dgps, num_data_list, estimators
+        tau_fn_list,
+        iv_strength_list,
+        dgps,
+        num_data_list,
+        estimators
     ))
 
     all_raw_rows = []
@@ -48,8 +61,18 @@ def main():
     results_dir = os.path.join(script_dir, "results")
     os.makedirs(results_dir, exist_ok=True)
 
+    raw_path = os.path.join(
+        results_dir,
+        "variant_comparison_raw_abs_pi06_zimage.csv"
+    )
+
+    summary_path = os.path.join(
+        results_dir,
+        "variant_comparison_summary_abs_pi06_zimage.csv"
+    )
+
     for tau_fn, iv_strength, dgp, num_data, est in settings:
-        print("------ Settings ------")
+        print("\n------ Settings ------")
         print("tau_fn:", tau_fn)
         print("iv_strength:", iv_strength)
         print("dgp:", dgp)
@@ -60,43 +83,102 @@ def main():
         r2_results = []
 
         for run in range(monte_carlo):
-            print("Run", run + 1)
+            print("\nRun", run + 1, "of", monte_carlo)
 
-            result = experiment(
-                dgp, iv_strength, tau_fn, num_data, est, device, VERBOSE
-            )
+            try:
+                result = experiment(
+                    dgp,
+                    iv_strength,
+                    tau_fn,
+                    num_data,
+                    est,
+                    device,
+                    VERBOSE
+                )
 
-            r2_avg = float(result[0])
-            r2_fin = float(result[1])
-            mse_avg = float(result[3])
-            mse_fin = float(result[4])
-            mse_earlystop = float(result[5])
+                r2_avg = float(result[0])
+                r2_fin = float(result[1])
+                mse_avg = float(result[3])
+                mse_fin = float(result[4])
+                mse_earlystop = float(result[5])
 
-            mse_results.append(mse_earlystop)
-            r2_results.append(r2_fin)
+                mse_results.append(mse_earlystop)
+                r2_results.append(r2_fin)
 
-            all_raw_rows.append({
-                'tau_fn': tau_fn,
-                'iv_strength': iv_strength,
-                'dgp': dgp,
-                'num_data': num_data,
-                'estimator': est,
-                'run': run + 1,
-                'R2_avg': r2_avg,
-                'R2_fin': r2_fin,
-                'MSE_avg': mse_avg,
-                'MSE_fin': mse_fin,
-                'MSE_earlystop': mse_earlystop
-            })
+                all_raw_rows.append({
+                    'tau_fn': tau_fn,
+                    'iv_strength': iv_strength,
+                    'dgp': dgp,
+                    'num_data': num_data,
+                    'estimator': est,
+                    'run': run + 1,
+                    'R2_avg': r2_avg,
+                    'R2_fin': r2_fin,
+                    'MSE_avg': mse_avg,
+                    'MSE_fin': mse_fin,
+                    'MSE_earlystop': mse_earlystop
+                })
 
-        avg_mse = np.mean(mse_results)
-        std_mse = np.std(mse_results, ddof=1)
-        avg_r2 = np.mean(r2_results)
-        std_r2 = np.std(r2_results, ddof=1)
+                # Save raw results after every successful run
+                raw_df = pd.DataFrame(all_raw_rows)
+                raw_df.to_csv(raw_path, index=False)
 
-        print("---------- Results ----------")
-        print("Average MSE (early stop):", avg_mse)
-        print("Std. dev. MSE (early stop):", std_mse)
+                print("Saved partial raw results.")
+
+            except Exception as e:
+                print("\nERROR in setting:")
+                print("tau_fn:", tau_fn)
+                print("iv_strength:", iv_strength)
+                print("dgp:", dgp)
+                print("num_data:", num_data)
+                print("estimator:", est)
+                print("run:", run + 1)
+                print("Error message:", e)
+
+                all_raw_rows.append({
+                    'tau_fn': tau_fn,
+                    'iv_strength': iv_strength,
+                    'dgp': dgp,
+                    'num_data': num_data,
+                    'estimator': est,
+                    'run': run + 1,
+                    'R2_avg': np.nan,
+                    'R2_fin': np.nan,
+                    'MSE_avg': np.nan,
+                    'MSE_fin': np.nan,
+                    'MSE_earlystop': np.nan,
+                    'error': str(e)
+                })
+
+                raw_df = pd.DataFrame(all_raw_rows)
+                raw_df.to_csv(raw_path, index=False)
+
+                continue
+
+        if len(mse_results) > 0:
+            avg_mse = np.mean(mse_results)
+
+            if len(mse_results) > 1:
+                std_mse = np.std(mse_results, ddof=1)
+            else:
+                std_mse = 0.0
+
+            avg_r2 = np.mean(r2_results)
+
+            if len(r2_results) > 1:
+                std_r2 = np.std(r2_results, ddof=1)
+            else:
+                std_r2 = 0.0
+
+        else:
+            avg_mse = np.nan
+            std_mse = np.nan
+            avg_r2 = np.nan
+            std_r2 = np.nan
+
+        print("\n---------- Results ----------")
+        print("Average MSE early stop:", avg_mse)
+        print("Std. dev. MSE early stop:", std_mse)
         print("Average final R2:", avg_r2)
         print("Std. dev. final R2:", std_r2)
 
@@ -106,27 +188,21 @@ def main():
             'dgp': dgp,
             'num_data': num_data,
             'estimator': est,
+            'MC_successful_runs': len(mse_results),
             'avg_MSEearlystop': avg_mse,
             'std_MSEearlystop': std_mse,
             'avg_R2fin': avg_r2,
             'std_R2fin': std_r2
         })
 
-    raw_df = pd.DataFrame(all_raw_rows)
-    summary_df = pd.DataFrame(all_summary_rows)
+        # Save summary after every setting
+        summary_df = pd.DataFrame(all_summary_rows)
+        summary_df.to_csv(summary_path, index=False)
 
-    raw_df.to_csv(
-        os.path.join(results_dir, "high_dimensionality_comparison_raw_final.csv"),
-        index=False
-    )
-    summary_df.to_csv(
-        os.path.join(results_dir, "high_dimensionality_comparison_summary_final.csv"),
-        index=False
-    )
-
-    print("\nSaved:")
-    print("-", os.path.join(results_dir, "high_dimensionality_comparison_raw_final.csv"))
-    print("-", os.path.join(results_dir, "high_dimensionality_comparison_summary_final.csv"))
+    print("\nExperiment finished.")
+    print("Saved:")
+    print("-", raw_path)
+    print("-", summary_path)
 
 
 if __name__ == "__main__":
