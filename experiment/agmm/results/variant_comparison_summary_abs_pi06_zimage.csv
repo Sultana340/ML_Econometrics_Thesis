@@ -1,3 +1,0 @@
-tau_fn,iv_strength,dgp,num_data,g_features,estimator,MC_successful_runs,avg_MSEearlystop,std_MSEearlystop,avg_R2fin,std_R2fin
-abs,0.6,z_image,2000,100,AGMM,3,0.02326509232322375,0.005541227510647906,0.9325041969617208,0.0204079363655928
-abs,0.6,z_image,2000,100,CentroidMMDGMM,0,,,,

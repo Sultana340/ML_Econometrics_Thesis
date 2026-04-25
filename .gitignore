@@ -25,3 +25,4 @@ results/*
 results/agmm/*
 !results/agmm/iv_strength_boxplot_rawdata.png
 !results/agmm/iv_strength_visual_plot_summary.png
+experiment/agmm/results/agmm/
