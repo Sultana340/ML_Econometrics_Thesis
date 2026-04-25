@@ -1,0 +1,7 @@
+tau_fn,iv_strength,dgp,num_data,g_features,estimator,run,R2_avg,R2_fin,MSE_avg,MSE_fin,MSE_earlystop,error
+abs,0.6,z_image,2000,100,AGMM,1,,,,,,experiment() got an unexpected keyword argument 'g_features'
+abs,0.6,z_image,2000,100,AGMM,2,,,,,,experiment() got an unexpected keyword argument 'g_features'
+abs,0.6,z_image,2000,100,AGMM,3,,,,,,experiment() got an unexpected keyword argument 'g_features'
+abs,0.6,z_image,2000,100,CentroidMMDGMM,1,,,,,,experiment() got an unexpected keyword argument 'g_features'
+abs,0.6,z_image,2000,100,CentroidMMDGMM,2,,,,,,experiment() got an unexpected keyword argument 'g_features'
+abs,0.6,z_image,2000,100,CentroidMMDGMM,3,,,,,,experiment() got an unexpected keyword argument 'g_features'

@@ -372,59 +372,91 @@ class KernelLayerMMDGMMEarlyStop(_BaseSupLossAGMM):
 
 class CentroidMMDGMMEarlyStop(_BaseSupLossAGMM):
 
-    def __init__(self, learner, adversary_g,
-                 kernel, centers, sigma):
+    def __init__(self, learner, adversary_g, kernel, centers, sigma):
         """
         Parameters
         ----------
-        learner : a pytorch neural net module for the learner
-        adversary_g : a pytorch neural net module for the g function of the adversary
-        kernel : the kernel function
-        centers : numpy array that contains the inital value of the centers in the Z space
-        sigma : float that corresponds to the precition of the kernel
+        learner : PyTorch neural network for the learner h(T)
+        adversary_g : PyTorch neural network for the adversarial feature map g(Z)
+        kernel : kernel function
+        centers : NumPy array containing centers in the original Z space
+        sigma : float or array controlling the kernel bandwidth/precision
         """
+
+        if sigma is None:
+            raise ValueError("sigma cannot be None for CentroidMMDGMMEarlyStop.")
+
         class Adversary(torch.nn.Module):
 
             def __init__(self, g, basis_func, centers, sigma):
                 super(Adversary, self).__init__()
+
                 self.g = g
-                self.centers = nn.Parameter(
-                    torch.Tensor(centers), requires_grad=False)
                 self.basis_func = basis_func
-                if hasattr(sigma, '__len__'):
-                    self.init_sigma = sigma.reshape(1, -1)
-                    self.sigma = nn.Parameter(torch.Tensor(self.init_sigma))
+
+                # Fixed centers in Z-space
+                centers_tensor = torch.as_tensor(centers, dtype=torch.float32)
+                self.register_buffer("centers", centers_tensor)
+
+                # Sigma may be scalar or vector
+                if hasattr(sigma, "__len__"):
+                    self.init_sigma = np.asarray(sigma, dtype=np.float32).reshape(1, -1)
+                    sigma_tensor = torch.as_tensor(self.init_sigma, dtype=torch.float32)
                 else:
-                    self.init_sigma = sigma
-                    self.sigma = nn.Parameter(torch.tensor(self.init_sigma))
-                self.beta = nn.Linear(centers.shape[0], 1)
+                    self.init_sigma = float(sigma)
+                    sigma_tensor = torch.tensor(self.init_sigma, dtype=torch.float32)
+
+                # Sigma is trainable
+                self.sigma = nn.Parameter(sigma_tensor)
+
+                # One beta coefficient per center
+                self.beta = nn.Linear(centers_tensor.shape[0], 1)
+
                 self.reset_parameters()
 
             def reset_parameters(self):
-                if hasattr(self.init_sigma, '__len__'):
-                    self.sigma.data = torch.Tensor(
-                        self.init_sigma).to(self.sigma.device)
-                else:
-                    self.sigma.data = torch.tensor(
-                        self.init_sigma).to(self.sigma.device)
+                with torch.no_grad():
+                    if hasattr(self.init_sigma, "__len__"):
+                        sigma_tensor = torch.as_tensor(
+                            self.init_sigma,
+                            dtype=torch.float32,
+                            device=self.sigma.device
+                        )
+                    else:
+                        sigma_tensor = torch.tensor(
+                            self.init_sigma,
+                            dtype=torch.float32,
+                            device=self.sigma.device
+                        )
+
+                    self.sigma.copy_(sigma_tensor)
 
             def forward(self, x, reg=False):
-                x1, x2 = self.g(x), self.g(self.centers)
+                x1 = self.g(x)
+                x2 = self.g(self.centers)
+
                 K12 = _kernel(x1, x2, self.basis_func, self.sigma)
                 test = self.beta(K12)
+
                 if reg:
                     K22 = _kernel(x2, x2, self.basis_func, self.sigma)
-                    rkhs_reg = (self.beta.weight @ (K22 + K22.T) @
-                                self.beta.weight.T)[0][0] / 2
+                    rkhs_reg = (
+                        self.beta.weight @ (K22 + K22.T) @ self.beta.weight.T
+                    )[0][0] / 2
+
                     return test, rkhs_reg
+
                 return test
 
         self.learner = learner
         self.adversary = Adversary(
-            adversary_g, kernel, centers, sigma=sigma)
-        # whether we have a norm penalty for the adversary
+            adversary_g,
+            kernel,
+            centers,
+            sigma=sigma
+        )
+
         self.adversary_reg = True
-        # which adversary parameters to not ell2 penalize
         self.skip_list = ['beta.weight']
 
 
@@ -434,93 +466,145 @@ class KernelLossAGMMEarlyStop(_BaseAGMM):
         """
         Parameters
         ----------
-        learner : a pytorch neural net module for the learner
-        adversary_g : a pytorch neural net module for the g function of the adversary
-        kernel : the kernel function
-        sigma : float that corresponds to the precition of the kernel
+        learner : PyTorch neural network for the learner h(T)
+        adversary_g : PyTorch neural network for the adversarial feature map g(Z)
+        kernel : kernel function
+        sigma : float or array controlling the kernel bandwidth/precision
         """
+
+        if sigma is None:
+            raise ValueError("sigma cannot be None for KernelLossAGMMEarlyStop.")
+
         class Adversary(torch.nn.Module):
 
             def __init__(self, g, basis_func, sigma):
                 super(Adversary, self).__init__()
+
                 self.g = g
                 self.basis_func = basis_func
-                if hasattr(sigma, '__len__'):
-                    self.init_sigma = sigma.reshape(1, -1)
-                    self.sigma = nn.Parameter(torch.Tensor(self.init_sigma))
+
+                if hasattr(sigma, "__len__"):
+                    self.init_sigma = np.asarray(sigma, dtype=np.float32).reshape(1, -1)
+                    sigma_tensor = torch.as_tensor(self.init_sigma, dtype=torch.float32)
                 else:
-                    self.init_sigma = sigma
-                    self.sigma = nn.Parameter(torch.tensor(self.init_sigma))
+                    self.init_sigma = float(sigma)
+                    sigma_tensor = torch.tensor(self.init_sigma, dtype=torch.float32)
+
+                self.sigma = nn.Parameter(sigma_tensor)
                 self.reset_parameters()
 
             def reset_parameters(self):
-                if hasattr(self.init_sigma, '__len__'):
-                    self.sigma.data = torch.Tensor(
-                        self.init_sigma).to(self.sigma.device)
-                else:
-                    self.sigma.data = torch.tensor(
-                        self.init_sigma).to(self.sigma.device)
+                with torch.no_grad():
+                    if hasattr(self.init_sigma, "__len__"):
+                        sigma_tensor = torch.as_tensor(
+                            self.init_sigma,
+                            dtype=torch.float32,
+                            device=self.sigma.device
+                        )
+                    else:
+                        sigma_tensor = torch.tensor(
+                            self.init_sigma,
+                            dtype=torch.float32,
+                            device=self.sigma.device
+                        )
+
+                    self.sigma.copy_(sigma_tensor)
 
             def forward(self, x1, x2):
-                return _kernel(self.g(x1), self.g(x2), self.basis_func, self.sigma)
+                return _kernel(
+                    self.g(x1),
+                    self.g(x2),
+                    self.basis_func,
+                    self.sigma
+                )
 
         self.learner = learner
-        self.g = adversary_g
-        self.basis_func = kernel
-        if hasattr(sigma, '__len__'):
-            self.init_sigma = sigma.reshape(1, -1)
-            self.sigma = nn.Parameter(torch.Tensor(self.init_sigma))
-        else:
-            self.init_sigma = sigma
-            self.sigma = nn.Parameter(torch.tensor(self.init_sigma))
-
-        if hasattr(self.init_sigma, '__len__'):
-            self.sigma.data = torch.Tensor(
-                self.init_sigma).to(self.sigma.device)
-        else:
-            self.sigma.data = torch.tensor(
-                self.init_sigma).to(self.sigma.device)
-
         self.adversary = Adversary(adversary_g, kernel, sigma)
+
+        # These are used for early stopping evaluation
+        self.g = self.adversary.g
+        self.basis_func = kernel
+        self.sigma = self.adversary.sigma
+
         self.skip_list = []
 
-    def fit(self, Z, T, Y, Z_dev, T_dev, Y_dev, eval_freq=1,
-            learner_l2=1e-3, adversary_l2=1e-4,
-            learner_lr=0.001, adversary_lr=0.001, n_epochs=100, bs=100, train_learner_every=1, train_adversary_every=1,
-            ols_weight=0.0, warm_start=False, logger=None, model_dir='model', device=None):
-        """
-        Parameters
-        ----------
-        Z : instruments
-        T : treatments
-        Y : outcome
-        learner_l2, adversary_l2 : l2_regularization of parameters of learner and adversary
-        learner_lr : learning rate of the Adam optimizer for learner
-        adversary_lr : learning rate of the Adam optimizer for adversary
-        n_epochs : how many passes over the data
-        bs : batch size
-        train_learner_every : after how many training iterations of the adversary should we train the learner
-        ols_weight : weight on OLS (square loss) objective
-        warm_start : whehter to reset weights or not
-        logger : a function that takes as input (learner, adversary, epoch, writer) and is called after every epoch
-            Supposed to be used to log the state of the learning.
-        model_dir : folder where to store the learned models after every epoch
-        """
+    def fit(self, Z, T, Y, Z_dev, T_dev, Y_dev,
+            eval_freq=1,
+            learner_l2=1e-3,
+            adversary_l2=1e-4,
+            learner_lr=0.001,
+            adversary_lr=0.001,
+            n_epochs=200,
+            bs=100,
+            train_learner_every=1,
+            train_adversary_every=2,
+            ols_weight=0.0,
+            warm_start=False,
+            logger=None,
+            model_dir='model',
+            device='cpu',
+            verbose=0,
+            DEBUG=False):
 
-        Z, T, Y = self._pretrain(Z, T, Y,
-                                 learner_l2, adversary_l2, 0,
-                                 learner_lr, adversary_lr, n_epochs, bs, train_learner_every, train_adversary_every,
-                                 warm_start, logger, model_dir, device)
+        if device is None:
+            device = 'cpu'
 
-        # early_stopping
-        f_of_z_dev_collection = self._earlystop_eval(Z, T, Y, Z_dev, T_dev, Y_dev, device, 100, ols_weight,
-                                                     train_learner_every, train_adversary_every, bs)
+        Z, T, Y = self._pretrain(
+            Z,
+            T,
+            Y,
+            learner_l2,
+            adversary_l2,
+            0,
+            learner_lr,
+            adversary_lr,
+            n_epochs,
+            bs,
+            train_learner_every,
+            train_adversary_every,
+            warm_start,
+            logger,
+            model_dir,
+            device,
+            verbose
+        )
 
-        dprint(DEBUG, "f(z_dev) collection prepared.")
+        # Prepare early-stopping test functions
+        f_of_z_dev_collection = self._earlystop_eval(
+            Z,
+            T,
+            Y,
+            Z_dev,
+            T_dev,
+            Y_dev,
+            device=device,
+            n_epochs=min(100, n_epochs),
+            ols_weight=ols_weight,
+            train_learner_every=train_learner_every,
+            train_adversary_every=train_adversary_every,
+            bs=bs
+        )
 
-        # reset weights of learner and adversary
+        if DEBUG:
+            print("f(z_dev) collection prepared.")
+
+        # Reset learner and adversary after constructing early-stop evaluation set
         self.learner.apply(reinit_weights)
         self.adversary.apply(reinit_weights)
+
+        # Reset optimizers after reinitializing weights
+        beta1 = 0.
+        self.optimizerD = OAdam(
+            add_weight_decay(self.learner, learner_l2),
+            lr=learner_lr,
+            betas=(beta1, .01)
+        )
+
+        self.optimizerG = OAdam(
+            add_weight_decay(self.adversary, adversary_l2, skip_list=self.skip_list),
+            lr=adversary_lr,
+            betas=(beta1, .01)
+        )
 
         eval_history = []
         min_eval = float("inf")
@@ -529,38 +613,63 @@ class KernelLossAGMMEarlyStop(_BaseAGMM):
         train_dl2 = DataLoader(self.train_ds, batch_size=bs, shuffle=True)
 
         for epoch in range(n_epochs):
-            dprint(DEBUG, "Epoch #", epoch, sep="")
+
+            if DEBUG:
+                print("Epoch #", epoch, sep="")
+
             for it, ((zb1, xb1, yb1), (zb2, xb2, yb2)) in enumerate(zip(self.train_dl, train_dl2)):
 
                 zb1, xb1, yb1 = map(lambda x: x.to(device), (zb1, xb1, yb1))
                 zb2, xb2, yb2 = map(lambda x: x.to(device), (zb2, xb2, yb2))
 
+                batch_size_1 = zb1.shape[0]
+                batch_size_2 = zb2.shape[0]
+                normalizer = batch_size_1 * batch_size_2
+
+                # Learner update
                 if it % train_learner_every == 0:
                     self.learner.train()
-                    psi1, psi2 = yb1 - \
-                        self.learner(xb1), yb2 - self.learner(xb2)
-                    kernel = self.adversary(zb1, zb2)
-                    D_loss = psi1.T @ kernel @ psi2 / (bs**2)
-                    D_loss += ols_weight * \
-                        (torch.mean(psi1**2) + torch.mean(psi2**2)) / 2
+                    self.adversary.eval()
+
+                    psi1 = yb1 - self.learner(xb1)
+                    psi2 = yb2 - self.learner(xb2)
+
+                    kernel_matrix = self.adversary(zb1, zb2).detach()
+
+                    D_loss = psi1.T @ kernel_matrix @ psi2 / normalizer
+                    D_loss += ols_weight * (
+                        torch.mean(psi1 ** 2) + torch.mean(psi2 ** 2)
+                    ) / 2
+
                     self.optimizerD.zero_grad()
                     D_loss.backward()
                     self.optimizerD.step()
+
                     self.learner.eval()
 
+                # Adversary update
                 if it % train_adversary_every == 0:
                     self.adversary.train()
-                    psi1, psi2 = yb1 - \
-                        self.learner(xb1), yb2 - self.learner(xb2)
-                    kernel = self.adversary(zb1, zb2)
-                    G_loss = - psi1.T @ kernel @ psi2 / (bs**2)
+                    self.learner.eval()
+
+                    with torch.no_grad():
+                        psi1 = yb1 - self.learner(xb1)
+                        psi2 = yb2 - self.learner(xb2)
+
+                    kernel_matrix = self.adversary(zb1, zb2)
+
+                    G_loss = - psi1.T @ kernel_matrix @ psi2 / normalizer
+
                     self.optimizerG.zero_grad()
                     G_loss.backward()
                     self.optimizerG.step()
+
                     self.adversary.eval()
 
-            torch.save(self.learner, os.path.join(
-                self.model_dir, "epoch{}".format(epoch)))
+            torch.save(
+                self.learner,
+                os.path.join(self.model_dir, "epoch{}".format(epoch))
+            )
 
             if logger is not None:
                 logger(self.learner, self.adversary, epoch, self.writer)
@@ -568,22 +677,36 @@ class KernelLossAGMMEarlyStop(_BaseAGMM):
             if epoch % eval_freq == 0:
                 self.learner.eval()
                 self.adversary.eval()
-                g_of_x_dev = self.learner(T_dev)
+
+                with torch.no_grad():
+                    g_of_x_dev = self.learner(T_dev.to(device))
+
                 curr_eval = approx_sup_kernel_moment_eval(
-                    Y_dev.cpu(), g_of_x_dev, f_of_z_dev_collection, self.basis_func, self.sigma)
-                dprint(DEBUG, "Current moment approx:", curr_eval)
+                    Y_dev.cpu(),
+                    g_of_x_dev.cpu(),
+                    f_of_z_dev_collection,
+                    self.basis_func,
+                    self.sigma.detach().cpu()
+                )
+
+                if DEBUG:
+                    print("Current moment approx:", curr_eval)
+
                 eval_history.append(curr_eval)
+
                 if min_eval > curr_eval:
                     min_eval = curr_eval
                     best_learner_state_dict = copy.deepcopy(
-                        self.learner.state_dict())
+                        self.learner.state_dict()
+                    )
 
-            # end of epoch loop
-
-        # select best model according to early stop criterion
+        # Select best model according to early stopping criterion
         self.learner.load_state_dict(best_learner_state_dict)
-        torch.save(self.learner, os.path.join(
-            self.model_dir, "earlystop"))
+
+        torch.save(
+            self.learner,
+            os.path.join(self.model_dir, "earlystop")
+        )
 
         if logger is not None:
             self.writer.flush()
@@ -591,51 +714,78 @@ class KernelLossAGMMEarlyStop(_BaseAGMM):
 
         return self
 
-    def _earlystop_eval(self, Z_train, T_train, Y_train, Z_dev, T_dev, Y_dev, device=None, n_epochs=60,
-                        ols_weight=0., train_learner_every=1, train_adversary_every=1, bs=100):
-        '''
-        Create a set of test functions to evaluate against for early stopping
-        '''
+    def _earlystop_eval(self, Z_train, T_train, Y_train,
+                        Z_dev, T_dev, Y_dev,
+                        device='cpu',
+                        n_epochs=60,
+                        ols_weight=0.0,
+                        train_learner_every=1,
+                        train_adversary_every=1,
+                        bs=100):
+        """
+        Create a collection of test functions f(Z_dev) for early stopping.
+        """
+
         f_of_z_dev_collection = []
         train_dl2 = DataLoader(self.train_ds, batch_size=bs, shuffle=True)
-        # training loop for n_epochs on Z_train,T_train,Y_train
+
         for epoch in range(n_epochs):
+
             for it, ((zb1, xb1, yb1), (zb2, xb2, yb2)) in enumerate(zip(self.train_dl, train_dl2)):
 
                 zb1, xb1, yb1 = map(lambda x: x.to(device), (zb1, xb1, yb1))
                 zb2, xb2, yb2 = map(lambda x: x.to(device), (zb2, xb2, yb2))
 
+                batch_size_1 = zb1.shape[0]
+                batch_size_2 = zb2.shape[0]
+                normalizer = batch_size_1 * batch_size_2
+
+                # Learner update
                 if it % train_learner_every == 0:
                     self.learner.train()
-                    psi1, psi2 = yb1 - \
-                        self.learner(xb1), yb2 - self.learner(xb2)
-                    kernel = self.adversary(zb1, zb2)
-                    D_loss = psi1.T @ kernel @ psi2 / (bs**2)
-                    D_loss += ols_weight * \
-                        (torch.mean(psi1**2) + torch.mean(psi2**2)) / 2
+                    self.adversary.eval()
+
+                    psi1 = yb1 - self.learner(xb1)
+                    psi2 = yb2 - self.learner(xb2)
+
+                    kernel_matrix = self.adversary(zb1, zb2).detach()
+
+                    D_loss = psi1.T @ kernel_matrix @ psi2 / normalizer
+                    D_loss += ols_weight * (
+                        torch.mean(psi1 ** 2) + torch.mean(psi2 ** 2)
+                    ) / 2
+
                     self.optimizerD.zero_grad()
                     D_loss.backward()
                     self.optimizerD.step()
+
                     self.learner.eval()
 
+                # Adversary update
                 if it % train_adversary_every == 0:
                     self.adversary.train()
-                    psi1, psi2 = yb1 - \
-                        self.learner(xb1), yb2 - self.learner(xb2)
-                    kernel = self.adversary(zb1, zb2)
-                    G_loss = - psi1.T @ kernel @ psi2 / (bs**2)
+                    self.learner.eval()
+
+                    with torch.no_grad():
+                        psi1 = yb1 - self.learner(xb1)
+                        psi2 = yb2 - self.learner(xb2)
+
+                    kernel_matrix = self.adversary(zb1, zb2)
+
+                    G_loss = - psi1.T @ kernel_matrix @ psi2 / normalizer
+
                     self.optimizerG.zero_grad()
                     G_loss.backward()
                     self.optimizerG.step()
+
                     self.adversary.eval()
-                    # end of the training loop
 
             self.learner.eval()
             self.adversary.eval()
+
             with torch.no_grad():
-                f_of_z_dev = self.g(Z_dev)
+                f_of_z_dev = self.g(Z_dev.to(device)).detach().cpu()
                 f_of_z_dev_collection.append(f_of_z_dev)
-            # end of epoch loop
 
         return f_of_z_dev_collection
 

@@ -1,0 +1,3 @@
+tau_fn,iv_strength,dgp,num_data,g_features,estimator,MC_successful_runs,avg_MSEearlystop,std_MSEearlystop,avg_R2fin,std_R2fin
+abs,0.6,z_image,2000,100,AGMM,0,,,,
+abs,0.6,z_image,2000,100,CentroidMMDGMM,0,,,,

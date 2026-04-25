@@ -2,8 +2,7 @@
  Thesis AGMM Experiment Script
  Derived from modified baseline implementation by Dikkala, Nishanth, Greg Lewis, Lester Mackey, and Vasilis Syrgkanis. "Minimax estimation of conditional moment models." arXiv preprint arXiv:2006.07201 (2020). https://github.com/microsoft/AdversarialGMM.git.
  All modification for thesis experiments by Abida Sultana should be noted in the git history.
-## Experiment 9:  How does the finite-sample performance of AGMM change when high dimensionality
- enters through the instrument space versus the treatment space?
+## Experiment 9:  Methodological Variant Comparison
 """
 
 import itertools
@@ -42,13 +41,10 @@ def main():
     # Added g_features
     g_features_list = [100]
 
-    monte_carlo = 3
+    monte_carlo = 1
 
-    estimators = ['AGMM','CentroidMMDGMM']
+    estimators = ['CentroidMMDGMM']
 
-    # Later, after this works, you can test other variants one by one:
-    # estimators = ['AGMM', 'CentroidMMDGMM']
-    # estimators = ['AGMM', 'KernelLossAGMM']
 
     settings = list(itertools.product(
         tau_fn_list,
@@ -67,12 +63,12 @@ def main():
 
     raw_path = os.path.join(
         results_dir,
-        "variant_comparison_raw_abs_pi06_zimage.csv"
+        "CentroidMMDGMM_raw_abs_pi06_zimage.csv"
     )
 
     summary_path = os.path.join(
         results_dir,
-        "variant_comparison_summary_abs_pi06_zimage.csv"
+        "CentroidMMDGMM_summary_abs_pi06_zimage.csv"
     )
 
     for tau_fn, iv_strength, dgp, num_data, g_features, est in settings:
@@ -97,8 +93,8 @@ def main():
                     tau_fn,
                     num_data,
                     est,
-                    device,
-                    VERBOSE,
+                    device=device,
+                    DEBUG=VERBOSE,
                     g_features=g_features
                 )
 

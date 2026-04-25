@@ -1,7 +1,7 @@
 tau_fn,iv_strength,dgp,num_data,g_features,estimator,run,R2_avg,R2_fin,MSE_avg,MSE_fin,MSE_earlystop,error
-abs,0.6,z_image,2000,100,AGMM,1,,,,,,experiment() got an unexpected keyword argument 'g_features'
-abs,0.6,z_image,2000,100,AGMM,2,,,,,,experiment() got an unexpected keyword argument 'g_features'
-abs,0.6,z_image,2000,100,AGMM,3,,,,,,experiment() got an unexpected keyword argument 'g_features'
-abs,0.6,z_image,2000,100,CentroidMMDGMM,1,,,,,,experiment() got an unexpected keyword argument 'g_features'
-abs,0.6,z_image,2000,100,CentroidMMDGMM,2,,,,,,experiment() got an unexpected keyword argument 'g_features'
-abs,0.6,z_image,2000,100,CentroidMMDGMM,3,,,,,,experiment() got an unexpected keyword argument 'g_features'
+abs,0.6,z_image,2000,100,AGMM,1,0.9619314670562744,0.954564094543457,0.008653931319713593,0.01032871101051569,0.02460281364619732,
+abs,0.6,z_image,2000,100,AGMM,2,0.927429735660553,0.9142975807189941,0.02171853929758072,0.025648662820458412,0.028015002608299255,
+abs,0.6,z_image,2000,100,AGMM,3,0.9527755975723267,0.9286509156227112,0.011878435499966145,0.017946572974324226,0.017177460715174675,
+abs,0.6,z_image,2000,100,CentroidMMDGMM,1,,,,,,name 'g_features' is not defined
+abs,0.6,z_image,2000,100,CentroidMMDGMM,2,,,,,,name 'g_features' is not defined
+abs,0.6,z_image,2000,100,CentroidMMDGMM,3,,,,,,name 'g_features' is not defined
