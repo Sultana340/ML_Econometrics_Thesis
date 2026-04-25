@@ -262,6 +262,7 @@ class _BaseSupLossAGMM(_BaseAGMM):
         f_of_z_dev_collection = []
         # training loop for n_epochs on Z_train,T_train,Y_train
         for epoch in range(n_epochs):
+
             for it, (zb, xb, yb) in enumerate(self.train_dl):
 
                 zb, xb, yb = map(lambda x: x.to(device), (zb, xb, yb))
@@ -543,7 +544,7 @@ class KernelLossAGMMEarlyStop(_BaseAGMM):
             logger=None,
             model_dir='model',
             device='cpu',
-            verbose=0,
+            verbose=1,
             DEBUG=False):
 
         if device is None:

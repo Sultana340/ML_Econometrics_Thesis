@@ -28,9 +28,9 @@ warnings.simplefilter("ignore", category=UserWarning)
 
 def main():
     device = 'cpu'
-    print("Running Thesis Variant Comparison Experiment on", device)
+    print("Running Thesis 'AGMM','KernelLayerMMDGMM','CentroidMMDGMM' Comparison Experiment on", device)
 
-    VERBOSE = False
+    VERBOSE = True # Set to True for detailed output during runs, False for cleaner logs. Adjust as needed.
 
     # Main thesis setting for variant comparison
     tau_fn_list = ['abs']
@@ -41,9 +41,9 @@ def main():
     # Added g_features
     g_features_list = [10]
 
-    monte_carlo = 1
+    monte_carlo = 3
 
-    estimators = ['CentroidMMDGMM']
+    estimators = ['AGMM','KernelLayerMMDGMM','CentroidMMDGMM']
 
 
     settings = list(itertools.product(
@@ -63,12 +63,12 @@ def main():
 
     raw_path = os.path.join(
         results_dir,
-        "CentroidMMDGMM_raw_abs_pi06_zimage.csv"
+        "Final_raw_abs_pi06_zimage.csv"
     )
 
     summary_path = os.path.join(
         results_dir,
-        "CentroidMMDGMM_summary_abs_pi06_zimage.csv"
+        "Final_summary_abs_pi06_zimage.csv"
     )
 
     for tau_fn, iv_strength, dgp, num_data, g_features, est in settings:
