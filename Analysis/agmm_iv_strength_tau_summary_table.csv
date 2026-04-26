@@ -1,0 +1,7 @@
+Structural function,IV strength,Avg. MSE early stop,Std. MSE early stop,Avg. final R2,Std. final R2
+abs,0.3,0.101,0.109,0.535,0.162
+abs,0.6,0.029,0.018,0.925,0.051
+abs,0.9,0.017,0.021,0.973,0.024
+sin,0.3,0.079,0.029,-0.389,0.214
+sin,0.6,0.029,0.013,0.735,0.112
+sin,0.9,0.022,0.012,0.847,0.064
