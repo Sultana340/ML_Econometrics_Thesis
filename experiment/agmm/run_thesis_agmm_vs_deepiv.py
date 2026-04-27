@@ -68,8 +68,6 @@ def extract_agmm_metrics(result):
 
     result_array = np.asarray(result, dtype=float).ravel()
 
-    print("AGMM raw result array:", result_array)
-
     AGMM_R2_INDEX = 1
     AGMM_MSE_INDEX = 5
 
@@ -92,22 +90,22 @@ def extract_deepiv_metrics(result):
 
 def main():
     device = "cpu"
-    print("Running Thesis AGMM vs DeepIV comparison on", device)
+    print("Running Thesis AGMM vs DeepIV final comparison on", device)
 
     VERBOSE = False
 
     # --------------------------------------------------
-    # Small smoke-test settings
+    # Final CPU-feasible comparison settings
     # --------------------------------------------------
     tau_fn_list = ["abs"]
     iv_strength_list = [0.6]
     dgps = ["z_image"]
-    num_data_list = [500]
+    num_data_list = [2000]
 
     estimators = ["AGMM", "DeepIV"]
 
-    monte_carlo = 1
-    n_epochs = 2
+    monte_carlo = 3
+    n_epochs = 200
     batch_size = 100
 
     settings = list(
@@ -149,6 +147,9 @@ def main():
 
             try:
                 if est == "AGMM":
+                    # AGMM uses its internal training setup.
+                    # Your previous smoke test showed AGMM reaching epoch #199,
+                    # so this corresponds to 200 epochs in your current AGMM setup.
                     result = agmm_experiment(
                         dgp,
                         iv_strength,
@@ -162,6 +163,7 @@ def main():
                     mse, r2 = extract_agmm_metrics(result)
 
                 elif est == "DeepIV":
+                    # DeepIV explicitly receives n_epochs = 200 here.
                     result = deepiv_experiment(
                         dgp=dgp,
                         iv_strength=iv_strength,
@@ -243,8 +245,8 @@ def main():
     raw_df = pd.DataFrame(raw_rows)
     summary_df = pd.DataFrame(summary_rows)
 
-    raw_path = os.path.join(results_dir, "agmm_vs_deepiv_raw_test.csv")
-    summary_path = os.path.join(results_dir, "agmm_vs_deepiv_summary_test.csv")
+    raw_path = os.path.join(results_dir, "agmm_vs_deepiv_abs_iv06_raw_final.csv")
+    summary_path = os.path.join(results_dir, "agmm_vs_deepiv_abs_iv06_summary_final.csv")
 
     raw_df.to_csv(raw_path, index=False)
     summary_df.to_csv(summary_path, index=False)
