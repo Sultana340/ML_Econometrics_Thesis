@@ -31,7 +31,7 @@ def main():
     print("Running Final IV Strength Comparison Thesis AGMM experiment on", device)
     VERBOSE = False
 
-    tau_fn_list = ['linear']   # add 'linear' if supported
+    tau_fn_list = ['sin']   # add 'linear' if supported
     iv_strength_list = [0.3, 0.6, 0.9]
     estimators = ['AGMM']
     dgps = ['z_image']
@@ -116,17 +116,17 @@ def main():
     summary_df = pd.DataFrame(all_summary_rows)
 
     raw_df.to_csv(
-        os.path.join(results_dir, "iv_strength_tau_function_comparison_raw_final.csv"),
+        os.path.join(results_dir, "iv_strength_sin_comparison_raw_final.csv"),
         index=False
     )
     summary_df.to_csv(
-        os.path.join(results_dir, "iv_strength_tau_function_comparison_summary_final.csv"),
+        os.path.join(results_dir, "iv_strength_sin_comparison_summary_final.csv"),
         index=False
     )
 
     print("\nSaved:")
-    print("-", os.path.join(results_dir, "iv_strength_tau_function_comparison_raw_final.csv"))
-    print("-", os.path.join(results_dir, "iv_strength_tau_function_comparison_summary_final.csv"))
+    print("-", os.path.join(results_dir, "iv_strength_sin_comparison_raw_final.csv"))
+    print("-", os.path.join(results_dir, "iv_strength_sin_comparison_summary_final.csv"))
 
 
 if __name__ == "__main__":
