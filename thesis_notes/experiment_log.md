@@ -131,7 +131,7 @@ tau_fn = ['abs','sin']
  estimators = ['AGMM'] 
  dgps = ['z_image','x_image'] 
  num_datas = [2000]
- monte carlo = 5
+ monte carlo = 3
  Epoch = 200
 Result:
 
@@ -152,7 +152,7 @@ Observation:
     monte_carlo = 3
     estimators = [
         'AGMM',
-        'kernelLayerMMDGMM', 'kernelLossAGMM','centroidMMDGMM']
+        'kernelLayerMMDGMM','centroidMMDGMM']
 
 Sub Experiment 2: Using all the variants w.r. to "sin"
  Run Started:
