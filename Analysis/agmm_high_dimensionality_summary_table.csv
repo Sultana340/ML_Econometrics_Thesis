@@ -1,0 +1,5 @@
+Structural function,IV strength,High-dimensional design,Avg. MSE early stop,Std. MSE early stop,Avg. final R2,Std. final R2
+abs,0.6,x_image,2.258,1.555,-56.048,45.334
+abs,0.6,z_image,0.03,0.009,0.919,0.065
+sin,0.6,x_image,42.587,51.878,-2049481.689,3453380.039
+sin,0.6,z_image,0.019,0.005,0.831,0.008

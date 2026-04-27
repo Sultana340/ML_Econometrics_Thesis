@@ -31,7 +31,7 @@ def main():
     print("Running Final IV Strength Comparison Thesis AGMM experiment on", device)
     VERBOSE = False
 
-    tau_fn_list = ['abs', 'sin']   # add 'linear' if supported
+    tau_fn_list = ['linear']   # add 'linear' if supported
     iv_strength_list = [0.3, 0.6, 0.9]
     estimators = ['AGMM']
     dgps = ['z_image']
