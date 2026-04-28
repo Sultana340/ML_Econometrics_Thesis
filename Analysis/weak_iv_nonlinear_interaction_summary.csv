@@ -1,0 +1,10 @@
+structural_function,iv_strength,mean_R2,std_R2,n_runs
+Nonsmooth nonlinear: $|x|$,0.3,0.5791,0.1355,5
+Nonsmooth nonlinear: $|x|$,0.6,0.9205,0.0316,5
+Nonsmooth nonlinear: $|x|$,0.9,0.9528,0.0507,5
+Linear,0.3,0.95,0.0193,5
+Linear,0.6,0.9884,0.0153,5
+Linear,0.9,0.9835,0.0157,5
+Nonlinear: $\sin(x)$,0.3,-0.3193,0.4667,5
+Nonlinear: $\sin(x)$,0.6,0.6903,0.1945,5
+Nonlinear: $\sin(x)$,0.9,0.8308,0.0717,5

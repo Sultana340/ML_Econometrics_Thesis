@@ -141,31 +141,17 @@ Observation:
 
 
  ## Experiment 10: Do kernel-based methodological variants improve structural recovery or training stability relative to the baseline AGMM implementation in a controlled high dimensional IV setting?
- Sub Experiment 1: Using all the variants w.r. to "abs"
+ 
  Run Started:
  Run Time:
  Script:
-  tau_fn_list = ['abs']
-    iv_strength_list = [0.6]
-    dgps = ['z_image']
-    num_data_list = [2000]
-    monte_carlo = 3
-    estimators = [
-        'AGMM',
-        'kernelLayerMMDGMM','centroidMMDGMM']
-
-    Sub Experiment 2: Using all the variants w.r. to "sin"
-    Run Started:
-    Run Time:
-    Script:
-    tau_fn_list = ['sin']
-    iv_strength_list = [0.6]
-    dgps = ['z_image']
-    num_data_list = [2000]
-    monte_carlo = 3
-    estimators = [
-        'AGMM',
-        'kernelLayerMMDGMM','centroidMMDGMM']
+  tau_fn_list = ["abs", "sin"]
+ iv_strength_list = [0.6]
+dgps = ["z_image"]
+estimators = ["AGMM", "KernelLayerMMDGMM", "CentroidMMDGMM"]
+monte_carlo = 5
+num_data = 2000
+epochs = 200
 
 
 Then combine the results.        
@@ -184,6 +170,23 @@ Observation:
 
 ## Experiment 12: How does the proposed AGMM implementation relate to existing neural instrument-variable estimators, particularly DeepGMM and DeepIV, with respect to structural recovery, endogeneity control, and computational feasibility in nonparametric IV settings?
 
+## agmm vs deepiv last check:
+tau_fn_list = ["abs", "sin"]
+iv_strength_list = [0.6]
+dgps = ["z_image"]
+estimators = ["AGMM", "DeepIV"]
+monte_carlo = 5
+num_data = 2000
+## agmm vs deepgmm last check:
+tau_fn_list = ["abs", "sin"]
+iv_strength_list = [0.6]
+dgps = ["z_image"]
+estimators = ["AGMM", "DeepGMM"]
+num_data_list = [2000]
+monte_carlo = 5
+epochs = 200
+batch_size = 100
+device = "cpu"
 
 
 

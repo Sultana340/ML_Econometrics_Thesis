@@ -36,7 +36,7 @@ def main():
     estimators = ['AGMM']
     dgps = ['z_image', 'x_image']
     num_data_list = [2000]
-    monte_carlo = 3
+    monte_carlo = 5
 
     settings = list(itertools.product(
         tau_fn_list, iv_strength_list, dgps, num_data_list, estimators
@@ -116,17 +116,17 @@ def main():
     summary_df = pd.DataFrame(all_summary_rows)
 
     raw_df.to_csv(
-        os.path.join(results_dir, "high_dimensionality_comparison_raw_final.csv"),
+        os.path.join(results_dir, "high_dimensionality_MC5_raw_final.csv"),
         index=False
     )
     summary_df.to_csv(
-        os.path.join(results_dir, "high_dimensionality_comparison_summary_final.csv"),
+        os.path.join(results_dir, "high_dimensionality_MC5_summary_final.csv"),
         index=False
     )
 
     print("\nSaved:")
-    print("-", os.path.join(results_dir, "high_dimensionality_comparison_raw_final.csv"))
-    print("-", os.path.join(results_dir, "high_dimensionality_comparison_summary_final.csv"))
+    print("-", os.path.join(results_dir, "high_dimensionality_MC5_raw_final.csv"))
+    print("-", os.path.join(results_dir, "high_dimensionality_MC5_summary_final.csv"))
 
 
 if __name__ == "__main__":
