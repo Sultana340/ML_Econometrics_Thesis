@@ -154,18 +154,18 @@ Observation:
         'AGMM',
         'kernelLayerMMDGMM','centroidMMDGMM']
 
-Sub Experiment 2: Using all the variants w.r. to "sin"
- Run Started:
- Run Time:
- Script:
-  tau_fn_list = ['sin']
+    Sub Experiment 2: Using all the variants w.r. to "sin"
+    Run Started:
+    Run Time:
+    Script:
+    tau_fn_list = ['sin']
     iv_strength_list = [0.6]
     dgps = ['z_image']
     num_data_list = [2000]
     monte_carlo = 3
     estimators = [
         'AGMM',
-        'kernelLayerMMDGMM', 'kernelLossAGMM','centroidMMDGMM']
+        'kernelLayerMMDGMM','centroidMMDGMM']
 
 
 Then combine the results.        
