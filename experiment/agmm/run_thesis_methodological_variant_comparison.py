@@ -41,7 +41,7 @@ def main():
     # Added g_features
     g_features_list = [10]
 
-    monte_carlo = 3
+    monte_carlo = 5
 
     estimators = ['AGMM','KernelLayerMMDGMM','CentroidMMDGMM']
 
@@ -63,12 +63,12 @@ def main():
 
     raw_path = os.path.join(
         results_dir,
-        "Final_sin_raw_pi06_zimage.csv"
+        "Final_variant_MC5_raw_pi06_zimage.csv"
     )
 
     summary_path = os.path.join(
         results_dir,
-        "Final_sin_summary_pi06_zimage.csv"
+        "Final_variant_MC5_summary_pi06_zimage.csv"
     )
 
     for tau_fn, iv_strength, dgp, num_data, g_features, est in settings:
