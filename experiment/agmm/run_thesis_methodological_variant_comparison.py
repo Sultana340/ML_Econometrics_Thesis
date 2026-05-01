@@ -33,7 +33,7 @@ def main():
     VERBOSE = True # Set to True for detailed output during runs, False for cleaner logs. Adjust as needed.
 
     # Main thesis setting for variant comparison
-    tau_fn_list = ['sin']
+    tau_fn_list = ['abs']
     iv_strength_list = [0.6]
     dgps = ['z_image']
     num_data_list = [2000]
@@ -63,12 +63,12 @@ def main():
 
     raw_path = os.path.join(
         results_dir,
-        "Final_variant_MC5_raw_pi06_zimage.csv"
+        "Final_variant_MC5_raw_abs.csv"
     )
 
     summary_path = os.path.join(
         results_dir,
-        "Final_variant_MC5_summary_pi06_zimage.csv"
+        "Final_variant_MC5_summary_abs.csv"
     )
 
     for tau_fn, iv_strength, dgp, num_data, g_features, est in settings:
