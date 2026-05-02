@@ -97,14 +97,14 @@ def main():
     # --------------------------------------------------
     # Final CPU-feasible comparison settings
     # --------------------------------------------------
-    tau_fn_list = ["abs"]
+    tau_fn_list = ["abs","sin"]
     iv_strength_list = [0.6]
     dgps = ["z_image"]
     num_data_list = [2000]
 
     estimators = ["AGMM", "DeepIV"]
 
-    monte_carlo = 3
+    monte_carlo = 5
     n_epochs = 200
     batch_size = 100
 
@@ -245,8 +245,8 @@ def main():
     raw_df = pd.DataFrame(raw_rows)
     summary_df = pd.DataFrame(summary_rows)
 
-    raw_path = os.path.join(results_dir, "agmm_vs_deepiv_abs_iv06_raw_final.csv")
-    summary_path = os.path.join(results_dir, "agmm_vs_deepiv_abs_iv06_summary_final.csv")
+    raw_path = os.path.join(results_dir, "agmm_vs_deepiv_MC5_raw_final.csv")
+    summary_path = os.path.join(results_dir, "agmm_vs_deepiv_MC5_summary_final.csv")
 
     raw_df.to_csv(raw_path, index=False)
     summary_df.to_csv(summary_path, index=False)
