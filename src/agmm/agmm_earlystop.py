@@ -146,107 +146,173 @@ class _BaseSupLossAGMM(_BaseAGMM):
 
     def fit(self, Z, T, Y, Z_dev, T_dev, Y_dev, eval_freq=1,
             learner_l2=1e-3, adversary_l2=1e-4, adversary_norm_reg=1e-3,
-            learner_lr=0.001, adversary_lr=0.001, n_epochs=200, bs=100, train_learner_every=1, train_adversary_every=2,
-            ols_weight=0., warm_start=False, logger=None, model_dir='model', device=None):
-        """
-        Parameters
-        ----------
-        Z : instruments
-        T : treatments
-        Y : outcome
-        learner_l2, adversary_l2 : l2_regularization of parameters of learner and adversary
-        adversary_norm_reg : adversary norm regularization weight
-        learner_lr : learning rate of the Adam optimizer for learner
-        adversary_lr : learning rate of the Adam optimizer for adversary
-        n_epochs : how many passes over the data
-        bs : batch size
-        train_learner_every : after how many training iterations of the adversary should we train the learner
-        ols_weight : weight on OLS (square loss) objective
-        warm_start : if False then network parameters are initialized at the beginning, otherwise we start
-            from their current weights
-        logger : a function that takes as input (learner, adversary, epoch, writer) and is called after every epoch
-            Supposed to be used to log the state of the learning.
-        model_dir : folder where to store the learned models after every epoch
-        """
+            learner_lr=0.001, adversary_lr=0.001, n_epochs=200, bs=100,
+            train_learner_every=1, train_adversary_every=2,
+            ols_weight=0., warm_start=False, logger=None,
+            model_dir='model', device=None):
 
-        Z, T, Y = self._pretrain(Z, T, Y,
-                                 learner_l2, adversary_l2, adversary_norm_reg,
-                                 learner_lr, adversary_lr, n_epochs, bs, train_learner_every, train_adversary_every,
-                                 warm_start, logger, model_dir, device)
+        Z, T, Y = self._pretrain(
+            Z,
+            T,
+            Y,
+            learner_l2,
+            adversary_l2,
+            adversary_norm_reg,
+            learner_lr,
+            adversary_lr,
+            n_epochs,
+            bs,
+            train_learner_every,
+            train_adversary_every,
+            warm_start,
+            logger,
+            model_dir,
+            device
+        )
 
-        # early_stopping
-        f_of_z_dev_collection = self._earlystop_eval(Z, T, Y, Z_dev, T_dev, Y_dev, device, 100, ols_weight, adversary_norm_reg,
-                                                     train_learner_every, train_adversary_every)
+        # --------------------------------------------------
+        # Early-stopping adversarial test-function collection
+        # --------------------------------------------------
+        f_of_z_dev_collection = self._earlystop_eval(
+            Z,
+            T,
+            Y,
+            Z_dev,
+            T_dev,
+            Y_dev,
+            device,
+            100,
+            ols_weight,
+            adversary_norm_reg,
+            train_learner_every,
+            train_adversary_every
+        )
 
         dprint(DEBUG, "f(z_dev) collection prepared.")
 
-        # reset weights of learner and adversary
+        # --------------------------------------------------
+        # Reset weights of learner and adversary
+        # --------------------------------------------------
         self.learner.apply(reinit_weights)
         self.adversary.apply(reinit_weights)
 
+        # --------------------------------------------------
+        # Early-stopping and convergence history
+        # --------------------------------------------------
         eval_history = []
+
+        self.history = {
+            "epoch": [],
+            "moment_loss": []
+        }
+
         min_eval = float("inf")
         best_learner_state_dict = copy.deepcopy(self.learner.state_dict())
 
+        # --------------------------------------------------
+        # Main training loop
+        # --------------------------------------------------
         for epoch in range(n_epochs):
             dprint(DEBUG, "Epoch #", epoch, sep="")
+
             for it, (zb, xb, yb) in enumerate(self.train_dl):
 
                 zb, xb, yb = map(lambda x: x.to(device), (zb, xb, yb))
 
-                if (it % train_learner_every == 0):
+                # ------------------------------
+                # Learner update
+                # ------------------------------
+                if it % train_learner_every == 0:
                     self.learner.train()
+
                     pred = self.learner(xb)
                     test = self.adversary(zb)
-                    D_loss = torch.mean(
-                        (yb - pred) * test) + ols_weight * torch.mean((yb - pred)**2)
+
+                    D_loss = torch.mean((yb - pred) * test)
+                    D_loss += ols_weight * torch.mean((yb - pred) ** 2)
+
                     self.optimizerD.zero_grad()
                     D_loss.backward()
                     self.optimizerD.step()
+
                     self.learner.eval()
 
-                if (it % train_adversary_every == 0):
+                # ------------------------------
+                # Adversary update
+                # ------------------------------
+                if it % train_adversary_every == 0:
                     self.adversary.train()
+
                     pred = self.learner(xb)
+
                     reg = 0
                     if self.adversary_reg:
                         test, reg = self.adversary(zb, reg=True)
                     else:
                         test = self.adversary(zb)
-                    G_loss = - torch.mean((yb - pred) *
-                                          test) + torch.mean(test**2)
+
+                    G_loss = -torch.mean((yb - pred) * test)
+                    G_loss += torch.mean(test ** 2)
                     G_loss += adversary_norm_reg * reg
+
                     self.optimizerG.zero_grad()
                     G_loss.backward()
                     self.optimizerG.step()
-                    self.adversary.eval()
-                # end of training loop
 
-            torch.save(self.learner, os.path.join(
-                self.model_dir, "epoch{}".format(epoch)))
+                    self.adversary.eval()
+
+            # --------------------------------------------------
+            # Save learner for averaging/final prediction
+            # --------------------------------------------------
+            torch.save(
+                self.learner,
+                os.path.join(self.model_dir, "epoch{}".format(epoch))
+            )
 
             if logger is not None:
                 logger(self.learner, self.adversary, epoch, self.writer)
 
+            # --------------------------------------------------
+            # Evaluate moment violation for early stopping
+            # and save epoch-level convergence history
+            # --------------------------------------------------
             if epoch % eval_freq == 0:
                 self.learner.eval()
                 self.adversary.eval()
-                g_of_x_dev = self.learner(T_dev)
+
+                with torch.no_grad():
+                    g_of_x_dev = self.learner(T_dev.to(device))
+
                 curr_eval = approx_sup_moment_eval(
-                    Y_dev.cpu(), g_of_x_dev, f_of_z_dev_collection)
+                    Y_dev.cpu(),
+                    g_of_x_dev,
+                    f_of_z_dev_collection
+                )
+
                 dprint(DEBUG, "Current moment approx:", curr_eval)
+
                 eval_history.append(curr_eval)
+
+                # Save convergence history for plotting
+                self.history["epoch"].append(epoch)
+                self.history["moment_loss"].append(float(curr_eval))
+
+                # Early-stopping criterion
                 if min_eval > curr_eval:
                     min_eval = curr_eval
                     best_learner_state_dict = copy.deepcopy(
-                        self.learner.state_dict())
+                        self.learner.state_dict()
+                    )
 
-            # end of epoch loop
-
-        # select best model according to early stop criterion
+        # --------------------------------------------------
+        # Select best model according to early-stopping criterion
+        # --------------------------------------------------
         self.learner.load_state_dict(best_learner_state_dict)
-        torch.save(self.learner, os.path.join(
-            self.model_dir, "earlystop"))
+
+        torch.save(
+            self.learner,
+            os.path.join(self.model_dir, "earlystop")
+        )
 
         if logger is not None:
             self.writer.flush()
@@ -254,59 +320,76 @@ class _BaseSupLossAGMM(_BaseAGMM):
 
         return self
 
-    def _earlystop_eval(self, Z_train, T_train, Y_train, Z_dev, T_dev, Y_dev, device=None, n_epochs=60,
-                        ols_weight=0., adversary_norm_reg=1e-3, train_learner_every=1, train_adversary_every=1):
-        '''
-        Create a set of test functions to evaluate against for early stopping
-        '''
+    def _earlystop_eval(self, Z_train, T_train, Y_train, Z_dev, T_dev, Y_dev,
+                        device=None, n_epochs=60, ols_weight=0.,
+                        adversary_norm_reg=1e-3, train_learner_every=1,
+                        train_adversary_every=1):
+        """
+        Create a set of test functions to evaluate against for early stopping.
+        """
+
         f_of_z_dev_collection = []
-        # training loop for n_epochs on Z_train,T_train,Y_train
+
         for epoch in range(n_epochs):
 
             for it, (zb, xb, yb) in enumerate(self.train_dl):
 
                 zb, xb, yb = map(lambda x: x.to(device), (zb, xb, yb))
 
-                if (it % train_learner_every == 0):
+                # ------------------------------
+                # Learner update
+                # ------------------------------
+                if it % train_learner_every == 0:
                     self.learner.train()
+
                     pred = self.learner(xb)
                     test = self.adversary(zb)
-                    D_loss = torch.mean(
-                        (yb - pred) * test) + ols_weight * torch.mean((yb - pred)**2)
+
+                    D_loss = torch.mean((yb - pred) * test)
+                    D_loss += ols_weight * torch.mean((yb - pred) ** 2)
+
                     self.optimizerD.zero_grad()
                     D_loss.backward()
                     self.optimizerD.step()
+
                     self.learner.eval()
 
-                if (it % train_adversary_every == 0):
+                # ------------------------------
+                # Adversary update
+                # ------------------------------
+                if it % train_adversary_every == 0:
                     self.adversary.train()
+
                     pred = self.learner(xb)
+
                     reg = 0
                     if self.adversary_reg:
                         test, reg = self.adversary(zb, reg=True)
                     else:
                         test = self.adversary(zb)
-                    G_loss = - torch.mean((yb - pred) *
-                                          test) + torch.mean(test**2)
+
+                    G_loss = -torch.mean((yb - pred) * test)
+                    G_loss += torch.mean(test ** 2)
                     G_loss += adversary_norm_reg * reg
+
                     self.optimizerG.zero_grad()
                     G_loss.backward()
                     self.optimizerG.step()
+
                     self.adversary.eval()
-                # end of training loop
 
             self.learner.eval()
             self.adversary.eval()
+
             with torch.no_grad():
                 if self.adversary_reg:
-                    f_of_z_dev = self.adversary(Z_dev, self.adversary_reg)[0]
+                    f_of_z_dev = self.adversary(Z_dev.to(device), reg=True)[0]
                 else:
-                    f_of_z_dev = self.adversary(Z_dev)
-                f_of_z_dev_collection.append(f_of_z_dev)
+                    f_of_z_dev = self.adversary(Z_dev.to(device))
+
+                f_of_z_dev_collection.append(f_of_z_dev.detach().cpu())
 
         return f_of_z_dev_collection
-
-
 class AGMMEarlyStop(_BaseSupLossAGMM):
 
     def __init__(self, learner, adversary):

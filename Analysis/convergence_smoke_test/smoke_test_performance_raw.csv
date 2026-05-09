@@ -1,0 +1,2 @@
+tau_fn,iv_strength,dgp,num_data,estimator,run,R2avg,R2fin,R2earlystop,MSEavg,MSEfin,MSEearlystop
+abs,0.6,z_image,500,AGMM,1,0.85623217,0.83785504,0.8340492,0.031514835,0.035543215,0.036377475

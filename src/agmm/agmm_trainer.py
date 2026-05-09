@@ -26,11 +26,11 @@ def train_agmm(
     G_val, # shape (n_samples, t_dim) true structural function of T, used for logging
     T_test, # shape (n_samples, t_dim)
     G_test, # shape (n_samples, t_dim) true structural function of T, used for logging
-    X_IMAGE=False, # whether to use CNN architecture for learner, which is only supported for image data. If False, uses fully connected architecture.
-    Z_IMAGE=False, # whether to use CNN architecture for adversary, which is only supported for image data. If False, uses fully connected architecture.
-    n_t=1, # dimension of treatment variable T
-    n_instruments=2, # dimension of instruments
-    n_hidden=200, # number of hidden units in fully connected layers of both learner and adversary. If using CNN architecture, this is the number of hidden units in the final fully connected layer before the output layer.
+    X_IMAGE=False,
+    Z_IMAGE=False,
+    n_t=1,
+    n_instruments=2,
+    n_hidden=200,
     dropout_p=0.1,
     learner_lr=1e-4,
     adversary_lr=5e-5,
@@ -48,6 +48,7 @@ def train_agmm(
         learner = CNN_X()
     else:
         learner = fc_x(n_t, n_hidden, dropout_p)
+
     if Z_IMAGE:
         adversary = CNN_Z_agmm()
     else:
@@ -56,8 +57,10 @@ def train_agmm(
     def logger(learner, adversary, epoch, writer):
         if not X_IMAGE:
             writer.add_histogram("learner", learner[-1].weight, epoch)
+
         if not Z_IMAGE:
             writer.add_histogram("adversary", adversary[-1].weight, epoch)
+
         log_metrics(
             Z_val,
             T_val,
@@ -81,6 +84,7 @@ def train_agmm(
     dprint(DEBUG, "Adversary_l2:", adversary_l2)
     dprint(DEBUG, "Number of epochs:", n_epochs)
     dprint(DEBUG, "Batch Size:", batch_size)
+
     agmm = AGMMEarlyStop(learner, adversary).fit(
         Z_train,
         T_train,
@@ -103,7 +107,6 @@ def train_agmm(
     )
 
     return agmm
-
 
 # Train KernelLayerGMM
 def train_kernellayergmm(
