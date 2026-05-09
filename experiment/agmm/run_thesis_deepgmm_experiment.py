@@ -294,10 +294,10 @@ def main():
     # Start with monte_carlo = 1 for a smoke test.
     # For final thesis results, use monte_carlo = 3 or 5 if CPU time allows.
     tau_fn_list = ["abs", "sin"]
-    iv_strength_list = [0.3, 0.6, 0.9]
+    iv_strength_list = [0.6]
     dgps = ["z_image"]
     num_data_list = [2000]
-    monte_carlo = 1
+    monte_carlo = 5
 
     settings = list(itertools.product(
         tau_fn_list,
@@ -371,11 +371,11 @@ results_dir = os.path.join(script_dir, "results")
 os.makedirs(results_dir, exist_ok=True)
 
 raw_df = pd.DataFrame(raw_rows)
-raw_path = os.path.join(results_dir, "thesis_deepgmm_raw.csv")
+raw_path = os.path.join(results_dir, "agmm_deepgmm_raw.csv")
 raw_df.to_csv(raw_path, index=False)
 
 summary_df = summarize_results(raw_df)
-summary_path = os.path.join(results_dir, "thesis_deepgmm_summary.csv")
+summary_path = os.path.join(results_dir, "agmm_deepgmm_summary.csv")
 summary_df.to_csv(summary_path, index=False)
 
 print("\n---------- Finished ----------")
