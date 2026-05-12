@@ -10,22 +10,20 @@ import torch
 
 
 # --------------------------------------------------
-# Project paths based on your current structure
+# Project paths
 # --------------------------------------------------
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-# script_dir:
-# ML_Econometrics_Thesis/experiment/agmm
+# ML_Econometrics_Thesis/experiment
 experiment_dir = os.path.dirname(script_dir)
 
-# project_root:
 # ML_Econometrics_Thesis
 project_root = os.path.dirname(experiment_dir)
 
-# AGMM package is in src/agmm
+# ML_Econometrics_Thesis/src
 src_path = os.path.join(project_root, "src")
 
-# DeepGMM folders are in experiment/agmm/deepgmm
+# ML_Econometrics_Thesis/experiment/agmm/deepgmm
 deepgmm_path = os.path.join(script_dir, "deepgmm")
 
 sys.path.insert(0, src_path)
@@ -50,9 +48,6 @@ warnings.simplefilter("ignore", category=UserWarning)
 # General helpers
 # --------------------------------------------------
 def set_seed(seed):
-    """
-    Set random seeds for reproducibility.
-    """
     np.random.seed(seed)
     torch.manual_seed(seed)
 
@@ -61,29 +56,19 @@ def set_seed(seed):
 
 
 def dgp_to_bools(dgp_str):
-    """
-    Convert DGP string into X_IMAGE and Z_IMAGE flags.
-    """
-    x_image = False
-    z_image = False
-
     if dgp_str == "x_image":
-        x_image = True
-    elif dgp_str == "z_image":
-        z_image = True
-    elif dgp_str == "xz_image":
-        x_image = True
-        z_image = True
-    else:
-        raise ValueError(f"Unknown dgp: {dgp_str}")
+        return True, False
 
-    return x_image, z_image
+    if dgp_str == "z_image":
+        return False, True
+
+    if dgp_str == "xz_image":
+        return True, True
+
+    raise ValueError(f"Unknown dgp: {dgp_str}")
 
 
 def as_tensor(array, device="cpu", dtype=torch.float64):
-    """
-    Convert numpy array or torch tensor to torch tensor.
-    """
     if isinstance(array, torch.Tensor):
         return array.to(device=device, dtype=dtype)
 
@@ -91,9 +76,6 @@ def as_tensor(array, device="cpu", dtype=torch.float64):
 
 
 def ensure_2d_column(tensor):
-    """
-    Ensure scalar variables have shape (n, 1).
-    """
     if tensor.dim() == 1:
         return tensor.view(-1, 1)
 
@@ -102,7 +84,7 @@ def ensure_2d_column(tensor):
 
 def ensure_image_tensor(z_tensor):
     """
-    Ensure MNIST image instruments have CNN-compatible shape.
+    Convert image-valued instruments into CNN-compatible shape.
 
     Possible input shapes:
         (n, 784)        -> (n, 1, 28, 28)
@@ -119,9 +101,6 @@ def ensure_image_tensor(z_tensor):
 
 
 def clean_result_value(value):
-    """
-    Convert result values to CSV-safe Python scalars where possible.
-    """
     if isinstance(value, torch.Tensor):
         value = value.detach().cpu().numpy()
 
@@ -138,15 +117,12 @@ def clean_result_value(value):
 
 def normalize_results(results):
     """
-    Convert performance output into a dictionary.
+    Convert AGMM or DeepGMM output into a dictionary.
 
-    In this project, AGMM eval_performance may return either:
-        - a dictionary
-        - a tuple/list in the order:
+    AGMM eval_performance may return either:
+        - dict
+        - tuple/list:
           R2avg, R2fin, R2earlystop, MSEavg, MSEfin, MSEearlystop
-
-    DeepGMM evaluation already returns a dictionary, but this function keeps
-    the output handling uniform.
     """
     if isinstance(results, dict):
         return {
@@ -178,18 +154,15 @@ def normalize_results(results):
     return {"result": clean_result_value(results)}
 
 
+# --------------------------------------------------
+# DeepGMM evaluation
+# --------------------------------------------------
 def eval_deepgmm_performance(estimator, T_test, G_test):
     """
-    Evaluate DeepGMM structural recovery.
+    Evaluate DeepGMM final structural recovery.
 
-    DeepGMM does not have AGMM-style averaged and early-stop prediction APIs.
-    Therefore, for DeepGMM we evaluate the final selected structural function
-    and report the common comparison metrics:
-
-        R2fin
-        MSEfin
-
-    These are directly comparable with AGMM's R2fin and MSEfin.
+    DeepGMM does not provide AGMM-style averaged or early-stop prediction.
+    Therefore, only final MSE and final R2 are reported.
     """
     if estimator.g is None:
         raise AttributeError("DeepGMM estimator has no fitted structural model g.")
@@ -230,51 +203,36 @@ def eval_deepgmm_performance(estimator, T_test, G_test):
 # --------------------------------------------------
 def agmm_hyperparams(dgp):
     """
-    AGMM hyperparameters matched to your run_agmm_experiment.py for AGMM.
-
-    For dgp='z_image', your AGMM script uses learner_lr = 2e-4.
+    AGMM hyperparameters matched to thesis experiment setting.
     """
-    dropout_p = 0.1
-    n_hidden = 200
-
-    learner_lr = 1e-4
-    adversary_lr = 5e-5
-    learner_l2 = 1e-4
-    adversary_l2 = 1e-4
-    adversary_norm_reg = 1e-4
-    n_epochs = 200
-    batch_size = 100
-    train_learner_every = 1
-    train_adversary_every = 2
-
-    if dgp == "z_image":
-        learner_lr = 2e-4
-    elif dgp == "x_image":
-        learner_l2 = 1e-8
-        adversary_l2 = 1e-8
-
-    return {
-        "dropout_p": dropout_p,
-        "n_hidden": n_hidden,
-        "learner_lr": learner_lr,
-        "adversary_lr": adversary_lr,
-        "learner_l2": learner_l2,
-        "adversary_l2": adversary_l2,
-        "adversary_norm_reg": adversary_norm_reg,
-        "n_epochs": n_epochs,
-        "batch_size": batch_size,
-        "train_learner_every": train_learner_every,
-        "train_adversary_every": train_adversary_every,
+    hp = {
+        "dropout_p": 0.1,
+        "n_hidden": 200,
+        "learner_lr": 1e-4,
+        "adversary_lr": 5e-5,
+        "learner_l2": 1e-4,
+        "adversary_l2": 1e-4,
+        "adversary_norm_reg": 1e-4,
+        "n_epochs": 200,
+        "batch_size": 100,
+        "train_learner_every": 1,
+        "train_adversary_every": 2,
     }
 
+    if dgp == "z_image":
+        hp["learner_lr"] = 2e-4
+
+    if dgp == "x_image":
+        hp["learner_l2"] = 1e-8
+        hp["adversary_l2"] = 1e-8
+
+    return hp
+
 
 # --------------------------------------------------
-# Train/evaluate AGMM on already-generated data
+# Train/evaluate AGMM
 # --------------------------------------------------
 def run_agmm_on_data(data, dgp, device="cpu", DEBUG=False):
-    """
-    Train AGMM on a fixed generated data split and return performance metrics.
-    """
     X_IMAGE, Z_IMAGE = dgp_to_bools(dgp)
 
     Z_train, T_train, Y_train, G_train = data[0]
@@ -318,16 +276,16 @@ def run_agmm_on_data(data, dgp, device="cpu", DEBUG=False):
 
 
 # --------------------------------------------------
-# Train/evaluate DeepGMM on already-generated data
+# Train/evaluate DeepGMM
 # --------------------------------------------------
 def run_deepgmm_on_data(data, dgp, device="cpu", DEBUG=False):
     """
-    Train DeepGMM on a fixed generated data split and return performance metrics.
+    This script supports only dgp='z_image' because the current DeepGMM
+    implementation uses scalar treatment T and image-valued instrument Z.
     """
     if dgp != "z_image":
         raise ValueError(
-            "Current DeepGMM implementation supports only dgp='z_image'. "
-            "It uses an MLP for scalar treatment T/X and a CNN for image-valued Z."
+            "DeepGMM comparison currently supports only dgp='z_image'."
         )
 
     Z_train, T_train, Y_train, G_train = data[0]
@@ -335,7 +293,7 @@ def run_deepgmm_on_data(data, dgp, device="cpu", DEBUG=False):
     Z_test, T_test, Y_test, G_test = data[2]
     Z_dev, T_dev, Y_dev, G_dev = data[3]
 
-    # DeepGMM structural learner g is double precision MLP.
+    # Structural learner g uses scalar treatment.
     T_train_d = ensure_2d_column(as_tensor(T_train, device=device, dtype=torch.float64))
     Y_train_d = ensure_2d_column(as_tensor(Y_train, device=device, dtype=torch.float64))
 
@@ -346,8 +304,7 @@ def run_deepgmm_on_data(data, dgp, device="cpu", DEBUG=False):
     T_test_d = ensure_2d_column(as_tensor(T_test, device=device, dtype=torch.float64))
     G_test_d = ensure_2d_column(as_tensor(G_test, device=device, dtype=torch.float64))
 
-    # DeepGMM adversary/test function f is CNN over Z images.
-    # Your DefaultCNN uses double precision parameters, so Z must also be double.
+    # Adversary/test function uses image-valued instrument Z.
     Z_train_f = ensure_image_tensor(as_tensor(Z_train, device=device, dtype=torch.float64))
     Z_dev_f = ensure_image_tensor(as_tensor(Z_dev, device=device, dtype=torch.float64))
 
@@ -366,8 +323,6 @@ def run_deepgmm_on_data(data, dgp, device="cpu", DEBUG=False):
         g_dev=G_dev_d,
     )
 
-    # Do not use AGMM's eval_performance here.
-    # It passes AGMM-specific keyword arguments such as burn_in to predict().
     results = eval_deepgmm_performance(
         estimator=estimator,
         T_test=T_test_d,
@@ -391,7 +346,7 @@ def run_paired_comparison(
     DEBUG=False,
 ):
     """
-    Generate one dataset and run both AGMM and DeepGMM on it.
+    Generate one dataset and run AGMM and DeepGMM on the same dataset.
     """
     if device == "cuda" and not torch.cuda.is_available():
         print("CUDA requested but unavailable. Falling back to CPU.")
@@ -399,12 +354,11 @@ def run_paired_comparison(
 
     if dgp != "z_image":
         raise ValueError(
-            "This comparison script is intended for dgp='z_image', because "
-            "the current DeepGMM method is MNISTZModelSelectionMethod."
+            "This final AGMM vs DeepGMM comparison supports only dgp='z_image'."
         )
 
-    # Unique but reproducible data seed per setting/run.
     tau_code = sum(ord(ch) for ch in str(tau_fn))
+
     data_seed = int(
         base_seed
         + 100000 * run
@@ -415,8 +369,11 @@ def run_paired_comparison(
 
     X_IMAGE, Z_IMAGE = dgp_to_bools(dgp)
 
-    # Generate the data once.
+    print("\nGenerating one shared dataset...")
+    print("data_seed:", data_seed)
+
     set_seed(data_seed)
+
     data = generate_data(
         X_IMAGE=X_IMAGE,
         Z_IMAGE=Z_IMAGE,
@@ -447,6 +404,7 @@ def run_paired_comparison(
         "train_seed": agmm_seed,
     }
 
+    print("\nTraining AGMM...")
     start_time = time.time()
 
     try:
@@ -460,12 +418,15 @@ def run_paired_comparison(
         cleaned_results = normalize_results(results)
 
         row.update(cleaned_results)
+        row["error"] = np.nan
         row["elapsed_sec"] = time.time() - start_time
+
         print("AGMM result:", cleaned_results)
 
     except Exception as exc:
         row["error"] = str(exc)
         row["elapsed_sec"] = time.time() - start_time
+
         print("AGMM ERROR:", exc)
 
     rows.append(row)
@@ -487,6 +448,7 @@ def run_paired_comparison(
         "train_seed": deepgmm_seed,
     }
 
+    print("\nTraining DeepGMM...")
     start_time = time.time()
 
     try:
@@ -500,12 +462,15 @@ def run_paired_comparison(
         cleaned_results = normalize_results(results)
 
         row.update(cleaned_results)
+        row["error"] = np.nan
         row["elapsed_sec"] = time.time() - start_time
+
         print("DeepGMM result:", cleaned_results)
 
     except Exception as exc:
         row["error"] = str(exc)
         row["elapsed_sec"] = time.time() - start_time
+
         print("DeepGMM ERROR:", exc)
 
     rows.append(row)
@@ -514,30 +479,52 @@ def run_paired_comparison(
 
 
 # --------------------------------------------------
-# Summarize Monte Carlo results
+# Summarize final results
 # --------------------------------------------------
 def summarize_results(raw_df):
     """
-    Summarize numerical metric columns across Monte Carlo replications.
+    Summarize successful Monte Carlo replications only.
+
+    The summary focuses on performance metrics. Runtime and error columns are kept
+    in the raw CSV but excluded from the performance summary.
     """
     id_cols = ["estimator", "dgp", "tau_fn", "iv_strength", "num_data"]
-    exclude_cols = set(id_cols + ["run", "data_seed", "train_seed"])
 
-    numeric_cols = raw_df.select_dtypes(include=[np.number]).columns.tolist()
+    df = raw_df.copy()
+
+    if "error" in df.columns:
+        df["success"] = df["error"].isna()
+    else:
+        df["success"] = True
+
+    success_df = df[df["success"]].copy()
+
+    exclude_cols = set(
+        id_cols
+        + [
+            "run",
+            "data_seed",
+            "train_seed",
+            "success",
+            "elapsed_sec",
+        ]
+    )
+
+    numeric_cols = success_df.select_dtypes(include=[np.number]).columns.tolist()
     metric_cols = [col for col in numeric_cols if col not in exclude_cols]
 
-    if not metric_cols:
+    if success_df.empty or not metric_cols:
         return pd.DataFrame()
 
     summary = (
-        raw_df
+        success_df
         .groupby(id_cols, dropna=False)[metric_cols]
         .agg(["mean", "std"])
         .reset_index()
     )
 
-    # Flatten MultiIndex columns.
     flat_cols = []
+
     for col in summary.columns:
         if isinstance(col, tuple):
             name, stat = col
@@ -554,52 +541,78 @@ def summarize_results(raw_df):
             flat_cols.append(col)
 
     summary.columns = flat_cols
+
+    success_counts = (
+        success_df
+        .groupby(id_cols, dropna=False)
+        .size()
+        .reset_index(name="MC_successful_runs")
+    )
+
+    summary = success_counts.merge(summary, on=id_cols, how="left")
+
     return summary
 
 
 # --------------------------------------------------
-# Main grid runner
+# Main final thesis runner
 # --------------------------------------------------
 def main():
     device = "cpu"
     DEBUG = False
 
-    print("Running Thesis AGMM vs DeepGMM comparison on", device)
+    print("\n========================================")
+    print("Running FINAL thesis comparison: AGMM vs DeepGMM")
+    print("========================================")
+    print("device:", device)
     print("script_dir:", script_dir)
     print("project_root:", project_root)
     print("src_path:", src_path)
     print("deepgmm_path:", deepgmm_path)
 
     # --------------------------------------------------
-    # Use smoke test first.
-    # After it works, set SMOKE_TEST = False.
+    # Final thesis comparison settings
     # --------------------------------------------------
-    SMOKE_TEST = True
+    tau_fn_list = ["abs", "sin"]
+    iv_strength_list = [0.3,0.9]
+    dgps = ["z_image"]
+    num_data_list = [2000]
+    monte_carlo = 3
 
-    if SMOKE_TEST:
-        tau_fn_list = ["abs"]
-        iv_strength_list = [0.6]
-        dgps = ["z_image"]
-        num_data_list = [500]
-        monte_carlo = 1
-    else:
-        # Thesis comparison setting.
-        tau_fn_list = ["abs", "sin"]
-        iv_strength_list = [0.3, 0.6, 0.9]
-        dgps = ["z_image"]
-        num_data_list = [2000]
-        monte_carlo = 3
+    settings = list(
+        itertools.product(
+            tau_fn_list,
+            iv_strength_list,
+            dgps,
+            num_data_list,
+        )
+    )
 
-    settings = list(itertools.product(
-        tau_fn_list,
-        iv_strength_list,
-        dgps,
-        num_data_list,
-    ))
+    print("\nFinal thesis configuration")
+    print("tau_fn_list:", tau_fn_list)
+    print("iv_strength_list:", iv_strength_list)
+    print("dgps:", dgps)
+    print("num_data_list:", num_data_list)
+    print("monte_carlo:", monte_carlo)
+    print("total settings:", len(settings))
+    print("total paired runs:", len(settings) * monte_carlo)
+    print("total model fits:", len(settings) * monte_carlo * 2)
 
-    print("Total settings:", len(settings))
-    print("Monte Carlo replications per setting:", monte_carlo)
-    print("SMOKE_TEST:", SMOKE_TEST)
+    # --------------------------------------------------
+    # Output paths
+    # --------------------------------------------------
+    results_dir = os.path.join(script_dir, "results")
+    os.makedirs(results_dir, exist_ok=True)
+
+    raw_path = os.path.join(
+        results_dir,
+        "thesis_agmm_deepgmm_comparison_raw_final.csv",
+    )
+
+    summary_path = os.path.join(
+        results_dir,
+        "thesis_agmm_deepgmm_comparison_summary_final.csv",
+    )
 
     raw_rows = []
 
@@ -628,30 +641,38 @@ def main():
 
             raw_rows.extend(rows)
 
-    # --------------------------------------------------
-    # Save outputs
-    # --------------------------------------------------
-    results_dir = os.path.join(script_dir, "results")
-    os.makedirs(results_dir, exist_ok=True)
+            # Save checkpoint after every paired run.
+            raw_df_checkpoint = pd.DataFrame(raw_rows)
+            raw_df_checkpoint.to_csv(raw_path, index=False)
 
+            summary_df_checkpoint = summarize_results(raw_df_checkpoint)
+            summary_df_checkpoint.to_csv(summary_path, index=False)
+
+            print("\nCheckpoint saved.")
+            print("Raw results:", raw_path)
+            print("Summary results:", summary_path)
+
+    # --------------------------------------------------
+    # Final save and print
+    # --------------------------------------------------
     raw_df = pd.DataFrame(raw_rows)
-    raw_path = os.path.join(results_dir, "thesis_agmm_deepgmm_comparison_raw.csv")
     raw_df.to_csv(raw_path, index=False)
 
     summary_df = summarize_results(raw_df)
-    summary_path = os.path.join(
-        results_dir,
-        "thesis_agmm_deepgmm_comparison_summary.csv",
-    )
     summary_df.to_csv(summary_path, index=False)
 
-    print("\n---------- Finished ----------")
+    print("\n---------- Finished FINAL thesis comparison ----------")
     print("Raw results saved to:", raw_path)
     print("Summary results saved to:", summary_path)
 
+    print("\nRaw results:")
+    print(raw_df)
+
     if not summary_df.empty:
-        print("\nSummary:")
+        print("\nSummary results:")
         print(summary_df)
+    else:
+        print("\nNo successful runs to summarize.")
 
 
 if __name__ == "__main__":
