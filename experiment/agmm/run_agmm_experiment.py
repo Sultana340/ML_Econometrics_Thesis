@@ -36,11 +36,14 @@ def arch_hyperparam_select(est, dgp):
     return dropout_p, n_hidden
 
 
-def kernel_hyperparam_select(est, dgp, g_features_override=None):
+def kernel_hyperparam_select(est, dgp, g_features_override=None, n_centers_override=None):
     g_features = 10
     n_centers = 25
     kernel_fn = gaussian
 
+    # --------------------------------------------------
+    # Estimator-specific defaults
+    # --------------------------------------------------
     if est == "KernelLayerMMDGMM":
         if dgp == "x_image":
             g_features = 70
@@ -50,21 +53,30 @@ def kernel_hyperparam_select(est, dgp, g_features_override=None):
             n_centers = 100
 
     elif est == "CentroidMMDGMM":
-        pass
+        # Default setting for thesis unless overridden
+        g_features = 10
+        n_centers = 25
 
     elif est == "KernelLossAGMM":
         pass
 
-    # Apply override after estimator-specific defaults
+    # --------------------------------------------------
+    # Apply overrides after estimator-specific defaults
+    # --------------------------------------------------
     if g_features_override is not None:
         g_features = g_features_override
 
+    if n_centers_override is not None:
+        n_centers = n_centers_override
+
+    # --------------------------------------------------
+    # Kernel parameters
+    # --------------------------------------------------
     centers = np.random.uniform(-4, 4, size=(n_centers, g_features))
     sigma = 2.0 / g_features
     sigmas = np.ones((n_centers,)) * sigma
 
     return g_features, n_centers, kernel_fn, centers, sigmas, sigma
-
 
 def train_hyperparam_select(est, dgp):
     learner_lr = 1e-4
@@ -127,7 +139,8 @@ def experiment(
     device="cpu",
     DEBUG=False,
     g_features=None,
-    return_history=False
+    return_history=False,
+    n_centers=None
 ):
     # --------------------------------------------------
     # Kernel-related hyperparameters
@@ -135,8 +148,9 @@ def experiment(
     g_features, n_centers, kernel_fn, centers, sigmas, sigma = kernel_hyperparam_select(
         est,
         dgp,
-        g_features_override=g_features
-    )
+        g_features_override=g_features,
+        n_centers_override=n_centers
+   )
 
     # --------------------------------------------------
     # Architecture hyperparameters

@@ -102,10 +102,10 @@ def main():
                     iv_strength,
                     tau_fn,
                     num_data,
-                    estimator,
+                    "CentroidMMDGMM",
                     device=device,
                     DEBUG=VERBOSE,
-                    g_features=g_features,
+                    g_features=10,
                     n_centers=n_centers
                 )
 
