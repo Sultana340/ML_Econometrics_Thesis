@@ -31,10 +31,10 @@ def main():
     print("Running High Dimensionality Comparison Thesis AGMM experiment on", device)
     VERBOSE = False
 
-    tau_fn_list = ['abs','sin']   # add 'linear' if supported
+    tau_fn_list = ['linear']   # add 'linear' if supported
     iv_strength_list = [0.6]
     estimators = ['AGMM']
-    dgps = ['z_image', 'x_image']
+    dgps = [ 'x_image']
     num_data_list = [2000]
     monte_carlo = 5
 
