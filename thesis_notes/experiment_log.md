@@ -1,194 +1,213 @@
 
-## Baseline Experiment
+# Experiment Log
 
-## Experiment 1: Modified Baseline AGMM
--tau_fn: abs
--iv_strenth: 0.5
--num_data: 1000
--learner: default
-Changes: Device solely CPU. 
-Result:
+This experiment log summarizes the five simulation experiments conducted in the thesis. The experiments evaluate the finite-sample behavior of AGMM in high-dimensional nonparametric instrumental variable settings under varying instrument strength, structural-function complexity, dimensional design, estimator choice, and adversarial training stability.
 
+## Common Technical Setup
 
-Observation:
+- **Framework:** Nonparametric instrumental variable estimation under endogeneity
+- **Main estimator:** AGMM
+- **Data design:** Controlled simulation using MNIST-based high-dimensional representations
+- **Sample size:** `n = 2000`
+- **Monte Carlo replications:** `MC = 5`
+- **Training environment:** CPU-based implementation
+- **Training horizon:** `200` epochs
+- **Batch size:** `100`
+- **Dropout probability:** `0.1`
+- **Hidden dimension:** `200`
+- **Optimizer:** Optimistic Adam
+- **Main evaluation metrics:**
+  - Early-stopping MSE
+  - Final \(R^2\)
 
-## Experiment 2: Modified Baseline AGMM
--tau_fn: abs
--iv_strenth: 0.5
--num_data: 1000
--learner: default
+The high-dimensional designs are defined as follows:
 
-Result:
+- `z_image`: the instrument \(Z\) is high-dimensional, while the treatment \(X\) is scalar.
+- `x_image`: the treatment \(X\) is high-dimensional, while the instrument \(Z\) is scalar.
 
+---
 
-Observation:
+## Experiment 1: IV Strength and Structural-Function Complexity
 
+### Objective
 
-## Experiment 3: THESIS AGMM 
--tau_fn: abs
--iv_strenth: 0.5
--num_data: 1000
--learner: default
+This experiment evaluates how AGMM performs when instrument strength and structural-function complexity vary.
 
-Result:
+### Design
 
+- **DGP:** `z_image`
+- **Estimator:** AGMM
+- **IV strength values:** \(\pi \in \{0.3, 0.6, 0.9\}\)
+- **Structural functions:**
+  - Linear: \(h_0(x)=x\)
+  - Nonsmooth nonlinear: \(h_0(x)=|x|\)
+  - Smooth nonlinear: \(h_0(x)=\sin(x)\)
 
-Observation:
+### Technical Details
 
-## Experiment 4: THESIS AGMM(Num_data increased)
-tau_fn = ['abs']
- iv_strength = [0.5]
- estimators = ['AGMM', 'KernelLayerMMDGMM'] 
- dgps = ['z_image'] 
- num_datas = [2000] 
-Edit: Klayer_model has been deleted
-Result:
+- Sample size: `n = 2000`
+- Monte Carlo replications: `5`
+- Epochs: `200`
+- Batch size: `100`
+- Optimizer: Optimistic Adam
+- Main metrics: early-stopping MSE and final \(R^2\)
 
+### Result Line
 
-Observation:
+The results show that stronger instruments improve structural recovery, producing lower early-stopping MSE and higher final \(R^2\). Nonlinear structural functions, especially \(\sin(x)\), are more difficult to recover than the linear benchmark.
 
+### Purpose
 
+This experiment establishes the baseline simulation evidence. It examines whether stronger instruments improve structural recovery and whether nonlinear structural functions are harder to estimate than the linear benchmark.
 
-## How does AGMM perform across different structural function shapes, holding the rest of the design fixed?(Machine Learning focused Structural function complexity)
-## Experiment 5: Run Started: 2026-04-20, 10:20 (Verification Experiment)
-Objective: the verification of the script and to make a standard basis for compare the performance of different tau functions (linear, sin, abs) in the AGMM framework.
-Run Started: 2026-04-20, 10:20
-Script:run_thesis_tau_comparision.py
-tau_fn = ['linear','sin','abs']
- iv_strength = [0.5]
- estimators = ['AGMM'] 
- dgps = ['z_image'] 
- num_datas = [2000]
- monte carlo = 1
-Changes in code: I've added the sin_fn function and updated the fn_dict in agmm_mnist_dgps.py to include 'sin'. The script should now be able to use the 'sin' tau function without errors. The sin_fn is defined as np.sin(x), which applies the sine function to the input.The linear function is already defined linear_fn(x) = 2 * x in agmm_mnist_dgps.py. Installed packages torch,torchaudio,torchvision.
-Result:
+---
 
-## Experiment 6: Run Started: 2026-04-20, 11:20 (Validation Experiment)
-Objective: To compare the performance of different tau functions (linear, sin, abs) in the AGMM framework.
-Run Started: 2026-04-20, 10:20
-Script:run_thesis_tau_comparision.py
-tau_fn = ['linear','sin','abs']
- iv_strength = [0.5]
- estimators = ['AGMM'] 
- dgps = ['z_image'] 
- num_datas = [2000]
- monte carlo = 5
-Changes in code: I've added the sin_fn function and updated the fn_dict in agmm_mnist_dgps.py to include 'sin'. The script should now be able to use the 'sin' tau function without errors. The sin_fn is defined as np.sin(x), which applies the sine function to the input.The linear function is already defined linear_fn(x) = 2 * x in agmm_mnist_dgps.py. Installed packages torch,torchaudio,torchvision.
-Result:
+## Experiment 2: Location of High Dimensionality
 
-Linear case: easy inverse problem + smooth structure + near-ideal identification+ Best performance AGMM
-Absolute value case: mid difficulty (non-smooth) + slightly higher MSE + estimator handles moderate non linearity+ Good performance(still strong R2)
-Sin Case: high MSE + Neg R2 + High frequency variation + Instrument weakness + Finite sample issue
+### Objective
 
-Interpretation: works extremely well for smooth/ low-complexity structure+ Stable under piecewise smooth function(abs) + But struggle with high frequency functions.
+This experiment studies whether AGMM behaves differently when high dimensionality enters through the instrument space or through the treatment space.
 
-A Clean Narrative: AGMM perform strongly under smooth structural functions but deteriorates under highly nonlinear and oscillatory mappings, highlighting the interaction between function complexity, identification strength, and adversarial approximation.
+### Design
 
+- **Estimator:** AGMM
+- **Compared designs:**
+  - `z_image`: high-dimensional instrument \(Z\), scalar treatment \(X\)
+  - `x_image`: high-dimensional treatment \(X\), scalar instrument \(Z\)
 
-## Experiment 7: Run Started: 2026-04-21, 11:20 (IV Strength Comparision)
-Objective: To compare the performance of different IV strengths (low, medium, high).
-Run Started: 2026-04-20, 10:20
-Script:run_thesis_iv_strength_comparison_final.py
-tau_fn = ['abs']
- iv_strength = [0.3,0.6,0.9]
- estimators = ['AGMM'] 
- dgps = ['z_image'] 
- num_datas = [2000]
- monte carlo = 5
- Epoch = 200
+### Technical Details
 
+- Sample size: `n = 2000`
+- Monte Carlo replications: `5`
+- Epochs: `200`
+- Batch size: `100`
+- Same neural architecture and optimizer settings as Experiment 1
 
-###################################################
-## Final Experiment
+### Result Line
 
+The `z_image` design produces more stable structural recovery, while the `x_image` design performs poorly and can generate strongly negative final \(R^2\) values. This indicates that AGMM is more reliable when high dimensionality enters through the instrument space rather than the treatment space.
 
+### Purpose
 
+This experiment identifies whether AGMM is more reliable when the high-dimensional information enters through the instrument rather than through the treatment. The results also justify the later focus on the `z_image` design.
 
- ## Experiment 8:  How effectively does AGMM recover the structural function under varying levels of identification and structural complexity?
- Objective: To compare the performance of different IV strengths (low, medium, high) in the AGMM framework and structural complexity.
- Run time: 12hours+
-Run Started: 2026-04-23, 10:20
-Script:run_thesis_iv_strength_tau_function_comparision.py
-tau_fn = ['sin','abs']
- iv_strength = [0.3,0.6,0.9]
- estimators = ['AGMM'] 
- dgps = ['z_image'] 
- num_datas = [2000]
- monte carlo = 5
- Epoch = 200
- Result:
+---
 
+## Experiment 3: Kernel-Based Variants vs. Baseline AGMM
 
-Observation:
+### Objective
 
- 
- ## Experiment 9:  How does the finite-sample performance of AGMM change when high dimensionality enters through the instrument space versus the treatment space?
- Objective: To assess the finite-sample performance of AGMM change when high dimensionality enters through the instrument space versus the treatment space.
- Run Started: 2026-04-24, 13:00
-Script:run_thesis_comparision.py
-tau_fn = ['abs','sin']
- iv_strength = [0.6]
- estimators = ['AGMM'] 
- dgps = ['z_image','x_image'] 
- num_datas = [2000]
- monte carlo = 3
- Epoch = 200
-Result:
+This experiment compares baseline AGMM with kernel-based AGMM variants to evaluate whether kernelization improves structural recovery or training stability.
 
+### Design
 
-Observation:
+- **DGP:** `z_image`
+- **IV strength:** \(\pi = 0.6\)
+- **Structural functions:**
+  - \(h_0(x)=|x|\)
+  - \(h_0(x)=\sin(x)\)
 
+### Estimators
 
+- AGMM
+- KernelLayerMMDGMM
+- CentroidMMDGMM
 
- ## Experiment 10: Do kernel-based methodological variants improve structural recovery or training stability relative to the baseline AGMM implementation in a controlled high dimensional IV setting?
- 
- Run Started:
- Run Time:
- Script:
-  tau_fn_list = ["abs", "sin"]
- iv_strength_list = [0.6]
-dgps = ["z_image"]
-estimators = ["AGMM", "KernelLayerMMDGMM", "CentroidMMDGMM"]
-monte_carlo = 5
-num_data = 2000
-epochs = 200
+### Technical Details
 
+- Sample size: `n = 2000`
+- Monte Carlo replications: `5`
+- Epochs: `200`
+- Kernel function: Gaussian kernel
+- Kernel features: \(g_{\mathrm{features}}\), commonly set around `10`
+- Centroid choices: \(n_{\mathrm{centers}}\), commonly tested around `25`
+- Main metrics:
+  - Early-stopping MSE
+  - Final \(R^2\)
+  - Run-wise Monte Carlo stability
 
-Then combine the results.        
+### Result Line
 
-Result:
+KernelLayerMMDGMM performs competitively in some settings, especially for \( |x| \), but its gains over AGMM are not uniform. CentroidMMDGMM is highly unstable and produces poor final \(R^2\) values, so it should be interpreted as a weak robustness variant rather than an improvement over baseline AGMM.
 
+### Purpose
 
-Observation:
+This experiment assesses whether kernel-based variants provide systematic improvements over baseline AGMM. It also clarifies whether these variants should be treated as reliable improvements or as robustness checks whose performance depends on architecture and regularization.
 
-## Experiment 11: How stable is the adversarial training procedure under practical computational constraints?
+---
 
+## Experiment 4: AGMM vs. Neural IV Benchmarks
 
+### Objective
 
+This experiment compares AGMM with alternative neural instrumental-variable estimators.
 
+### Design
 
+- **DGP:** `z_image`
+- **Structural functions:**
+  - \(h_0(x)=|x|\)
+  - \(h_0(x)=\sin(x)\)
 
-## Experiment 12: How does the proposed AGMM implementation relate to existing neural instrument-variable estimators, particularly DeepGMM and DeepIV, with respect to structural recovery, endogeneity control, and computational feasibility in nonparametric IV settings?
+### Estimators
 
-## agmm vs deepiv last check:
-tau_fn_list = ["abs", "sin"]
-iv_strength_list = [0.6]
-dgps = ["z_image"]
-estimators = ["AGMM", "DeepIV"]
-monte_carlo = 5
-num_data = 2000
-## agmm vs deepgmm last check:
-tau_fn_list = ["abs", "sin"]
-iv_strength_list = [0.6]
-dgps = ["z_image"]
-estimators = ["AGMM", "DeepGMM"]
-num_data_list = [2000]
-monte_carlo = 5
-epochs = 200
-batch_size = 100
-device = "cpu"
+- AGMM
+- DeepIV
+- DeepGMM
 
+### Technical Details
 
+- Sample size: `n = 2000`
+- Monte Carlo replications: typically `3` to `5`, depending on computational feasibility
+- CPU-based implementation
+- The comparison is restricted mainly to the `z_image` design because DeepIV and DeepGMM are more compatible with scalar or low-dimensional treatment settings.
 
+### Result Line
 
- 
+AGMM achieves stronger structural recovery than the neural IV benchmarks in the controlled `z_image` design, producing lower MSE and more favorable final \(R^2\) values than DeepIV and DeepGMM under the tested nonlinear structural functions.
+
+### Purpose
+
+This experiment evaluates whether AGMM provides stronger structural recovery than existing neural IV benchmarks in a controlled high-dimensional instrument setting.
+
+---
+
+## Experiment 5: Stability and Convergence Diagnostics
+
+### Objective
+
+This experiment examines whether the reported AGMM results are stable across Monte Carlo replications and whether the adversarial training procedure exhibits reasonable convergence behavior.
+
+### Design
+
+The experiment evaluates three diagnostic components:
+
+1. Monte Carlo stability using the cumulative standard error of final \(R^2\)
+2. Run-wise early-stopping MSE across Monte Carlo replications
+3. Moment-loss convergence across training epochs
+
+### Estimators
+
+- Main convergence analysis: AGMM
+- Run-wise stability comparison:
+  - AGMM
+  - KernelLayerMMDGMM
+  - CentroidMMDGMM
+
+### Technical Details
+
+- Monte Carlo replications: `5`
+- Training horizon: `200` epochs
+- Main diagnostic metrics:
+  - Cumulative standard error of final \(R^2\)
+  - Run-wise early-stopping MSE
+  - Averaged absolute moment loss across epochs
+
+### Result Line
+
+The diagnostics show that AGMM's results are not driven by isolated Monte Carlo replications. The cumulative standard error decreases as replications increase, and the moment-loss curves stabilize before `200` epochs, supporting the chosen Monte Carlo and training-budget settings under CPU constraints.
+
+### Purpose
+
+This experiment supports the reliability of the simulation results by checking that the findings are not driven by isolated Monte Carlo replications or by an insufficient training horizon. It also justifies the use of five Monte Carlo replications and a 200-epoch training budget under CPU constraints.
+
