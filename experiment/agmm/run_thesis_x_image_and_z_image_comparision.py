@@ -2,7 +2,7 @@
  Thesis AGMM Experiment Script
  Derived from modified baseline implementation by Dikkala, Nishanth, Greg Lewis, Lester Mackey, and Vasilis Syrgkanis. "Minimax estimation of conditional moment models." arXiv preprint arXiv:2006.07201 (2020). https://github.com/microsoft/AdversarialGMM.git.
  All modification for thesis experiments by Abida Sultana should be noted in the git history.
-## Experiment 9:  How does the finite-sample performance of AGMM change when high dimensionality
+## Experiment 2:  How does the finite-sample performance of AGMM change when high dimensionality
  enters through the instrument space versus the treatment space?
 """
 
@@ -31,10 +31,10 @@ def main():
     print("Running High Dimensionality Comparison Thesis AGMM experiment on", device)
     VERBOSE = False
 
-    tau_fn_list = ['linear']   # add 'linear' if supported
+    tau_fn_list = ['sin', 'abs']   # add 'linear' if supported
     iv_strength_list = [0.6]
     estimators = ['AGMM']
-    dgps = [ 'x_image']
+    dgps = [ 'z_image', 'x_image']
     num_data_list = [2000]
     monte_carlo = 5
 

@@ -2,7 +2,7 @@
  Thesis AGMM Experiment Script
  Derived from modified baseline implementation by Dikkala, Nishanth, Greg Lewis, Lester Mackey, and Vasilis Syrgkanis. "Minimax estimation of conditional moment models." arXiv preprint arXiv:2006.07201 (2020). https://github.com/microsoft/AdversarialGMM.git.
  All modification for thesis experiments by Abida Sultana should be noted in the git history.
-## Experiment 9:  Methodological Variant Comparison
+## Experiment 3:  Methodological Variant Comparison
 """
 
 import itertools

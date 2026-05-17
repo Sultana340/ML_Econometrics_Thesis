@@ -2,7 +2,7 @@
  Thesis AGMM Experiment Script
  Derived from modified baseline implementation by Dikkala, Nishanth, Greg Lewis, Lester Mackey, and Vasilis Syrgkanis. "Minimax estimation of conditional moment models." arXiv preprint arXiv:2006.07201 (2020). https://github.com/microsoft/AdversarialGMM.git.
  All modification for thesis experiments by Abida Sultana should be noted in the git history.
-## Experiment 8: How effectively does AGMM recover the structural function
+## Experiment 1: How effectively does AGMM recover the structural function
 under varying levels of identification and structural complexity?
 """
 
@@ -31,7 +31,7 @@ def main():
     print("Running Final IV Strength Comparison Thesis AGMM experiment on", device)
     VERBOSE = False
 
-    tau_fn_list = ['sin']   # add 'linear' if supported
+    tau_fn_list = ['linear','abs','sin']   # add 'linear' if supported
     iv_strength_list = [0.3, 0.6, 0.9]
     estimators = ['AGMM']
     dgps = ['z_image']

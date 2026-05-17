@@ -9,21 +9,14 @@ import pandas as pd
 import torch
 
 
-# --------------------------------------------------
-# Project paths
-# --------------------------------------------------
 script_dir = os.path.dirname(os.path.abspath(__file__))
 
-# ML_Econometrics_Thesis/experiment
 experiment_dir = os.path.dirname(script_dir)
 
-# ML_Econometrics_Thesis
 project_root = os.path.dirname(experiment_dir)
 
-# ML_Econometrics_Thesis/src
 src_path = os.path.join(project_root, "src")
 
-# ML_Econometrics_Thesis/experiment/agmm/deepgmm
 deepgmm_path = os.path.join(script_dir, "deepgmm")
 
 sys.path.insert(0, src_path)
@@ -31,9 +24,7 @@ sys.path.insert(0, deepgmm_path)
 sys.path.insert(0, script_dir)
 
 
-# --------------------------------------------------
-# Imports
-# --------------------------------------------------
+
 from agmm.iv_dgp_generate_data import generate_data
 from agmm.agmm_trainer import train_agmm
 from agmm.agmm_utilities import eval_performance
@@ -44,9 +35,7 @@ from methods.mnist_z_model_selection_method import MNISTZModelSelectionMethod
 warnings.simplefilter("ignore", category=UserWarning)
 
 
-# --------------------------------------------------
-# General helpers
-# --------------------------------------------------
+
 def set_seed(seed):
     np.random.seed(seed)
     torch.manual_seed(seed)
@@ -154,9 +143,7 @@ def normalize_results(results):
     return {"result": clean_result_value(results)}
 
 
-# --------------------------------------------------
-# DeepGMM evaluation
-# --------------------------------------------------
+
 def eval_deepgmm_performance(estimator, T_test, G_test):
     """
     Evaluate DeepGMM final structural recovery.
@@ -198,9 +185,7 @@ def eval_deepgmm_performance(estimator, T_test, G_test):
     }
 
 
-# --------------------------------------------------
-# AGMM hyperparameters
-# --------------------------------------------------
+
 def agmm_hyperparams(dgp):
     """
     AGMM hyperparameters matched to thesis experiment setting.
@@ -229,9 +214,7 @@ def agmm_hyperparams(dgp):
     return hp
 
 
-# --------------------------------------------------
-# Train/evaluate AGMM
-# --------------------------------------------------
+
 def run_agmm_on_data(data, dgp, device="cpu", DEBUG=False):
     X_IMAGE, Z_IMAGE = dgp_to_bools(dgp)
 
@@ -275,9 +258,6 @@ def run_agmm_on_data(data, dgp, device="cpu", DEBUG=False):
     return results
 
 
-# --------------------------------------------------
-# Train/evaluate DeepGMM
-# --------------------------------------------------
 def run_deepgmm_on_data(data, dgp, device="cpu", DEBUG=False):
     """
     This script supports only dgp='z_image' because the current DeepGMM
